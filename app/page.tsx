@@ -1,7 +1,7 @@
 "use client"
 
 import { Sidebar } from "@/components/sidebar"
-import { SearchHero } from "@/components/search-hero"
+import { TopHeader } from "@/components/top-header"
 import { SearchResults } from "@/components/search-results"
 import { AlbumsList } from "@/components/albums-list"
 import { SharedAlbums } from "@/components/shared-albums"
@@ -36,12 +36,16 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar activeView={activeView} onNavigate={handleNavigate} onUploadClick={() => setIsUploadModalOpen(true)} />
+      <Sidebar activeView={activeView} onNavigate={handleNavigate} />
+      <TopHeader
+        onUploadClick={() => setIsUploadModalOpen(true)}
+        onSearch={handleSearch}
+        showSearch={activeView === "home" || activeView === "search-results"}
+      />
 
-      <main className="flex-1 ml-64">
+      <main className="flex-1 ml-64 pt-20">
         {activeView === "home" && (
           <div>
-            <SearchHero onSearch={handleSearch} />
             <RecentPhotos />
             <div className="max-w-7xl mx-auto px-8 py-12">
               <h2 className="text-2xl font-semibold text-foreground mb-6">Albums</h2>

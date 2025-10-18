@@ -24,6 +24,7 @@ export interface Album {
   createdAt: string
   updatedAt: string
   coverPhotoId?: number
+  owner?: string
 }
 
 export interface SharedAlbum {
