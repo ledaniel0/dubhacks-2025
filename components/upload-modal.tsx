@@ -420,7 +420,7 @@ export function UploadModal({ isOpen, onClose, onPhotoUploaded }: UploadModalPro
                             <Button
                               size="sm"
                               onClick={() => setActiveTab("google-photos")}
-                              className="bg-green-600 hover:bg-green-700 text-white active:scale-95 active:brightness-110"
+                              className="bg-gradient-to-r from-primary to-accent text-primary-foreground active:scale-95 active:brightness-110 min-w-20 px-4"
                             >
                               View
                             </Button>
@@ -430,7 +430,7 @@ export function UploadModal({ isOpen, onClose, onPhotoUploaded }: UploadModalPro
                             <Button
                               size="sm"
                               onClick={() => handleServiceConnect(service.id)}
-                              className="bg-gradient-to-r from-primary to-accent text-primary-foreground active:scale-95 active:brightness-110"
+                              className="bg-green-600 hover:bg-green-700 text-white active:scale-95 active:brightness-110"
                             >
                               Connect
                             </Button>
