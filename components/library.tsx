@@ -7,12 +7,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { useState } from "react"
 import { photoLibrary } from "@/lib/photo-data"
 import { PhotoCard } from "./photo-card"
-import type { Photo } from "@/lib/types"
 
 type SortOption = "date-desc" | "date-asc" | "name-asc" | "name-desc" | "location" | "liked"
 

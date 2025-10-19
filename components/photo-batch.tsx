@@ -12,11 +12,17 @@ import type { Photo } from "@/lib/types"
 interface PhotoBatchProps {
   photos: Photo[]
   searchQuery: string
+  isLoading?: boolean
   onClearSearch: () => void
   onAlbumCreated?: (title: string, description: string, photoIds: number[]) => void
+  sharedAlbumContext?: {
+    albumId: number
+    albumTitle: string
+    onAddToSharedAlbum: (photoIds: number[]) => void
+  }
 }
 
-export function PhotoBatch({ photos, searchQuery, onClearSearch, onAlbumCreated }: PhotoBatchProps) {
+export function PhotoBatch({ photos, searchQuery, isLoading = false, onClearSearch, onAlbumCreated, sharedAlbumContext }: PhotoBatchProps) {
   const [animatedPhotos, setAnimatedPhotos] = useState<Set<number>>(new Set())
   const [hoveredPhoto, setHoveredPhoto] = useState<number | null>(null)
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null)
@@ -110,8 +116,75 @@ export function PhotoBatch({ photos, searchQuery, onClearSearch, onAlbumCreated 
     }
   }
 
+  const handleAddToSharedAlbum = async () => {
+    if (sharedAlbumContext && selectedPhotoIds.length > 0) {
+      setIsCreating(true)
+      await new Promise((resolve) => setTimeout(resolve, 800))
+      
+      sharedAlbumContext.onAddToSharedAlbum(selectedPhotoIds)
+      setSelectedPhotoIds([])
+      setIsCreating(false)
+      onClearSearch()
+    }
+  }
+
   const selectedPhotos = photos.filter((photo) => selectedPhotoIds.includes(photo.id))
   const allSelected = selectedPhotoIds.length === photos.length && photos.length > 0
+
+  // Loading state - show AI processing animation
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-8 py-8">
+        <div className="flex flex-col items-center justify-center py-32">
+          {/* Circular Progress Indicator */}
+          <div className="relative w-12 h-12 mb-4">
+            <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
+              {/* Background circle */}
+              <circle
+                cx="24"
+                cy="24"
+                r="20"
+                stroke="currentColor"
+                strokeWidth="3"
+                fill="none"
+                className="text-muted/20"
+              />
+              {/* Progress arc with fill animation */}
+              <circle
+                cx="24"
+                cy="24"
+                r="20"
+                stroke="currentColor"
+                strokeWidth="3"
+                fill="none"
+                strokeLinecap="round"
+                className="text-primary"
+                style={{
+                  strokeDasharray: "126",
+                  strokeDashoffset: "126",
+                  animation: "fillProgress 1.5s ease-out forwards",
+                }}
+              />
+            </svg>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Searching for &quot;{searchQuery}&quot;
+          </p>
+          
+          <style jsx>{`
+            @keyframes fillProgress {
+              0% {
+                stroke-dashoffset: 126;
+              }
+              100% {
+                stroke-dashoffset: 20;
+              }
+            }
+          `}</style>
+        </div>
+      </div>
+    )
+  }
 
   if (photos.length === 0) {
     return (
@@ -141,7 +214,7 @@ export function PhotoBatch({ photos, searchQuery, onClearSearch, onAlbumCreated 
             Found {photos.length} {photos.length === 1 ? "Photo" : "Photos"}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Results for &quot;{searchQuery}&quot; • Select photos to create an album
+            Results for "{searchQuery}" • Select photos to create an album
           </p>
         </div>
 
@@ -316,21 +389,38 @@ export function PhotoBatch({ photos, searchQuery, onClearSearch, onAlbumCreated 
                 </Button>
               </div>
 
-              {/* Right side: Create album button */}
-              <Button
-                onClick={handleCreateAlbum}
-                disabled={selectedPhotoIds.length === 0}
-                size="lg"
-                className={cn(
-                  "bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg transition-all duration-300",
-                  selectedPhotoIds.length > 0
-                    ? "hover:shadow-glow hover:scale-105"
-                    : "opacity-50 cursor-not-allowed",
-                )}
-              >
-                <FolderPlus className="h-5 w-5 mr-2" />
-                Create Album from {selectedPhotoIds.length} {selectedPhotoIds.length === 1 ? "Photo" : "Photos"}
-              </Button>
+              {/* Right side: Action button */}
+              {sharedAlbumContext ? (
+                <Button
+                  onClick={handleAddToSharedAlbum}
+                  disabled={selectedPhotoIds.length === 0}
+                  size="lg"
+                  className={cn(
+                    "bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg transition-all duration-300",
+                    selectedPhotoIds.length > 0
+                      ? "hover:shadow-glow hover:scale-105"
+                      : "opacity-50 cursor-not-allowed",
+                  )}
+                >
+                  <FolderPlus className="h-5 w-5 mr-2" />
+                  Add {selectedPhotoIds.length} {selectedPhotoIds.length === 1 ? "Photo" : "Photos"} to "{sharedAlbumContext.albumTitle}"
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleCreateAlbum}
+                  disabled={selectedPhotoIds.length === 0}
+                  size="lg"
+                  className={cn(
+                    "bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg transition-all duration-300",
+                    selectedPhotoIds.length > 0
+                      ? "hover:shadow-glow hover:scale-105"
+                      : "opacity-50 cursor-not-allowed",
+                  )}
+                >
+                  <FolderPlus className="h-5 w-5 mr-2" />
+                  Create Album from {selectedPhotoIds.length} {selectedPhotoIds.length === 1 ? "Photo" : "Photos"}
+                </Button>
+              )}
             </div>
           </div>
         </div>

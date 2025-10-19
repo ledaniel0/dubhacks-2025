@@ -88,6 +88,30 @@ export function createAlbum(data: {
   }
 }
 
+/**
+ * Helper function to create a shared album
+ */
+export function createSharedAlbum(data: {
+  id: number
+  name: string
+  photoIds: number[]
+  description?: string
+  sharedWith?: number
+  coverPhotoId?: number
+}): SharedAlbum {
+  return {
+    id: data.id,
+    name: data.name,
+    description: data.description || "",
+    photoIds: data.photoIds,
+    sharedWith: data.sharedWith || 0,
+    lastUpdated: "Just now",
+    owner: "You",
+    isOwner: true,
+    coverPhotoId: data.coverPhotoId || data.photoIds[0],
+  }
+}
+
 export const photoLibrary: Photo[] = [
   createPhoto({
     id: 1,
@@ -508,4 +532,23 @@ export function validatePhotoReferences(): {
     valid: missingIds.length === 0,
     missingIds,
   }
+}
+
+/**
+ * Adds a new shared album to the sharedAlbums array
+ * Returns the created shared album
+ */
+export function addSharedAlbum(title: string, description: string, photoIds: number[]): SharedAlbum {
+  const newId = Math.max(...sharedAlbums.map(a => a.id), 0) + 1
+  const newSharedAlbum = createSharedAlbum({
+    id: newId,
+    name: title,
+    description,
+    photoIds,
+    sharedWith: 0, // Will be updated when invites are sent
+  })
+  
+  // In a real app, this would be persisted to a database
+  // For now, we'll just return the album (it won't persist between sessions)
+  return newSharedAlbum
 }

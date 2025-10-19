@@ -20,6 +20,11 @@ const eslintConfig = [
       ".cursor/**",
     ],
   },
+  {
+    rules: {
+      "react/no-unescaped-entities": "off",
+    },
+  },
 ];
 
 export default eslintConfig;
