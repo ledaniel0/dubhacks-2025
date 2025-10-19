@@ -221,7 +221,7 @@ export default function HomePage() {
             {/* Home Content - Only visible when NOT in search mode */}
             {!isSearchMode && (
               <div className="transition-all duration-500">
-                <RecentPhotos onViewAll={() => handleNavigate("library")} onPhotoClick={handlePhotoClick} />
+                <RecentPhotos onViewAll={() => handleNavigate("library")} onPhotoClick={handlePhotoClick} refreshTrigger={refreshTrigger} />
                 <div className="max-w-7xl mx-auto px-8 py-12">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Albums</h2>

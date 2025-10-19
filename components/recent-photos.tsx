@@ -9,6 +9,7 @@ import type { Photo } from "@/lib/types"
 interface RecentPhotosProps {
   onViewAll?: () => void
   onPhotoClick?: (photo: Photo) => void
+  refreshTrigger?: number
 }
 
 // Fisher-Yates shuffle algorithm with seed for deterministic results
@@ -28,7 +29,7 @@ function shuffleArrayWithSeed<T>(array: T[], seed: number): T[] {
   return shuffled
 }
 
-export function RecentPhotos({ onViewAll, onPhotoClick }: RecentPhotosProps) {
+export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: RecentPhotosProps) {
   // Use a fixed seed for consistent shuffle on server and client
   const [randomPhotos, setRandomPhotos] = useState<Photo[]>([])
   const [animatedPhotos, setAnimatedPhotos] = useState<Set<number>>(new Set())
@@ -55,7 +56,7 @@ export function RecentPhotos({ onViewAll, onPhotoClick }: RecentPhotosProps) {
     }
     
     fetchPhotos()
-  }, [])
+  }, [refreshTrigger])
 
   useEffect(() => {
     if (randomPhotos.length === 0) return
