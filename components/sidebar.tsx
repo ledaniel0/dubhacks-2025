@@ -83,6 +83,34 @@ export function Sidebar({ activeView, onNavigate, onCollapseChange, isModalActiv
       )}
     >
       <div className="flex h-full flex-col">
+        {/* Echo Logo Section */}
+        <div className="px-3 py-4 border-b border-border/50">
+          <div className={cn(
+            "flex items-center transition-all duration-500 ease-in-out",
+            isCollapsed ? "justify-center px-2" : "justify-start px-4"
+          )}>
+            {/* Echo Logo Icon - Aligned with nav icons */}
+            <div className={cn(
+              "flex-shrink-0 w-10 h-10 flex items-center justify-center transition-all duration-500 ease-in-out",
+              isCollapsed ? "" : ""
+            )} style={{ marginLeft: isCollapsed ? '0px' : '-5px' }}>
+              <div className="h-10 w-10 rounded-xl animated-gradient flex items-center justify-center shadow-glow">
+                <Sparkles className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            
+            {/* Echo Text - Slides in from right */}
+            <div className={cn(
+              "flex-1 min-w-0 transition-all duration-500 ease-in-out text-left",
+              isCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100 ml-3"
+            )}>
+              <span className="text-3xl font-bold bg-gradient-to-r from-[#FF6B35] via-[#E0338E] to-[#00B4D8] bg-clip-text text-transparent relative z-10 whitespace-nowrap text-left">
+                Echo
+              </span>
+            </div>
+          </div>
+        </div>
+
         <nav className="flex-1 space-y-2 px-3 py-4">
           {navigation.map((item) => {
             const Icon = item.icon
