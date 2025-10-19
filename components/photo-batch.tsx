@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { AddPhotosToAlbumModal } from "./add-photos-to-album-modal"
 import { cn } from "@/lib/utils"
 import type { Photo } from "@/lib/types"
 
@@ -30,6 +31,7 @@ export function PhotoBatch({ photos, searchQuery, refineQuery = "", isLoading = 
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null)
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<number[]>([])
   const [isCreateAlbumDialogOpen, setIsCreateAlbumDialogOpen] = useState(false)
+  const [isAddToAlbumModalOpen, setIsAddToAlbumModalOpen] = useState(false)
   const [albumTitle, setAlbumTitle] = useState("")
   const [albumDescription, setAlbumDescription] = useState("")
   const [isCreating, setIsCreating] = useState(false)
@@ -507,20 +509,37 @@ export function PhotoBatch({ photos, searchQuery, refineQuery = "", isLoading = 
                   Add {selectedPhotoIds.length} {selectedPhotoIds.length === 1 ? "Photo" : "Photos"} to "{sharedAlbumContext.albumTitle}"
                 </Button>
               ) : (
-                <Button
-                  onClick={handleCreateAlbum}
-                  disabled={selectedPhotoIds.length === 0}
-                  size="lg"
-                  className={cn(
-                    "bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg transition-all duration-300",
-                    selectedPhotoIds.length > 0
-                      ? "hover:shadow-glow hover:scale-105"
-                      : "opacity-50 cursor-not-allowed",
-                  )}
-                >
-                  <FolderPlus className="h-5 w-5 mr-2" />
-                  Create Album from {selectedPhotoIds.length} {selectedPhotoIds.length === 1 ? "Photo" : "Photos"}
-                </Button>
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={() => setIsAddToAlbumModalOpen(true)}
+                    disabled={selectedPhotoIds.length === 0}
+                    size="lg"
+                    variant="outline"
+                    className={cn(
+                      "border-2 border-primary/40 transition-all duration-300",
+                      selectedPhotoIds.length > 0
+                        ? "hover:border-primary hover:bg-primary/10"
+                        : "opacity-50 cursor-not-allowed",
+                    )}
+                  >
+                    <FolderPlus className="h-5 w-5 mr-2" />
+                    Add to Album
+                  </Button>
+                  <Button
+                    onClick={handleCreateAlbum}
+                    disabled={selectedPhotoIds.length === 0}
+                    size="lg"
+                    className={cn(
+                      "bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg transition-all duration-300",
+                      selectedPhotoIds.length > 0
+                        ? "hover:shadow-glow hover:scale-105"
+                        : "opacity-50 cursor-not-allowed",
+                    )}
+                  >
+                    <FolderPlus className="h-5 w-5 mr-2" />
+                    Create Album from {selectedPhotoIds.length} {selectedPhotoIds.length === 1 ? "Photo" : "Photos"}
+                  </Button>
+                </div>
               )}
             </div>
           </div>
@@ -624,6 +643,21 @@ export function PhotoBatch({ photos, searchQuery, refineQuery = "", isLoading = 
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Add to Album Modal */}
+      <AddPhotosToAlbumModal
+        isOpen={isAddToAlbumModalOpen}
+        onClose={() => setIsAddToAlbumModalOpen(false)}
+        selectedPhotoIds={selectedPhotoIds}
+        onAddToAlbum={(albumId) => {
+          // TODO: Add API call to add photos to album
+          console.log("Adding photos to album:", { albumId, photoIds: selectedPhotoIds })
+
+          // Clear selection and close search
+          setSelectedPhotoIds([])
+          onClearSearch()
+        }}
+      />
     </>
   )
 }

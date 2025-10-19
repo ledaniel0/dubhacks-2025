@@ -50,15 +50,15 @@ export default function HomePage() {
 
   const handleSearch = (query: string) => {
     if (!query.trim()) return
-    
+
     // Check if this is a refinement or new search
     const isRefinement = isSearchMode && searchResults.length > 0
-    
+
     // Set states - for refinement update refineQuery, for new search update initialSearchQuery
     setIsSearchMode(true)
     setIsSearching(true)
     setSearchQuery(query)
-    
+
     if (isRefinement) {
       setRefineQuery(query)
     } else {

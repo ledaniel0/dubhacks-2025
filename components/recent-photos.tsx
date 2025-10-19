@@ -4,6 +4,7 @@ import Image from "next/image"
 import { useState, useEffect } from "react"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { photoLibrary } from "@/lib/photo-data"
 import type { Photo } from "@/lib/types"
 
 interface RecentPhotosProps {
@@ -30,54 +31,59 @@ function shuffleArrayWithSeed<T>(array: T[], seed: number): T[] {
 }
 
 export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: RecentPhotosProps) {
-  const [allPhotos, setAllPhotos] = useState<Photo[]>([])
+  const [allPhotos, setAllPhotos] = useState<Photo[]>(photoLibrary)
   const [displayedPhotos, setDisplayedPhotos] = useState<Photo[]>([])
   const [animatedPhotos, setAnimatedPhotos] = useState<Set<number>>(new Set())
   const [fadingPhotos, setFadingPhotos] = useState<Set<number>>(new Set())
-  const [isLoading, setIsLoading] = useState(true)
   const [availablePhotoIndices, setAvailablePhotoIndices] = useState<number[]>([])
 
+  // Initialize with static data immediately - no delay!
   useEffect(() => {
-    // Fetch photos from API
+    const seed = Date.now()
+    const initialPhotos = shuffleArrayWithSeed(photoLibrary, seed).slice(0, 13)
+    setDisplayedPhotos(initialPhotos)
+
+    // Create pool of available indices (excluding initial 13)
+    const usedIds = new Set(initialPhotos.map(p => p.id))
+    const available = photoLibrary
+      .map((_, index) => index)
+      .filter(index => !usedIds.has(photoLibrary[index].id))
+    setAvailablePhotoIndices(available)
+  }, [])
+
+  // Fetch fresh data from API in background
+  useEffect(() => {
     async function fetchPhotos() {
       try {
-        setIsLoading(true)
         const response = await fetch('/api/photos')
         const data = await response.json()
         const photos: Photo[] = data.photos || []
 
+        // Update allPhotos for rotation, but don't replace displayed photos
         setAllPhotos(photos)
 
-        // Initialize with random 13 photos
-        const seed = Date.now()
-        const initialPhotos = shuffleArrayWithSeed(photos, seed).slice(0, 13)
-        setDisplayedPhotos(initialPhotos)
-
-        // Create pool of available indices (excluding initial 13)
-        const usedIds = new Set(initialPhotos.map(p => p.id))
+        // Update available pool with fresh data
+        const usedIds = new Set(displayedPhotos.map(p => p.id))
         const available = photos
           .map((_, index) => index)
           .filter(index => !usedIds.has(photos[index].id))
         setAvailablePhotoIndices(available)
       } catch (error) {
         console.error('Error fetching photos:', error)
-        setDisplayedPhotos([])
-      } finally {
-        setIsLoading(false)
       }
     }
 
     fetchPhotos()
   }, [refreshTrigger])
 
-  // Initial fade-in animation
+  // Initial fade-in animation - faster stagger for instant feel
   useEffect(() => {
     if (displayedPhotos.length === 0) return
 
     displayedPhotos.forEach((photo, index) => {
       setTimeout(() => {
         setAnimatedPhotos((prev) => new Set(prev).add(photo.id))
-      }, index * 100)
+      }, index * 30) // Reduced from 100ms to 30ms - 390ms total
     })
   }, [displayedPhotos.length])
 
@@ -149,23 +155,22 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
           return newSet
         })
 
-        // Fade in new photo (faster)
+        // Fade in new photo (slower, more gradual)
         setTimeout(() => {
           setAnimatedPhotos((prev) => new Set(prev).add(newPhoto.id))
-        }, 50)
+        }, 200)
 
         // Add old photo back to available pool
         const oldPhotoIndex = allPhotos.findIndex(p => p.id === photoToReplace.id)
         if (oldPhotoIndex !== -1 && !currentAvailableIndices.includes(oldPhotoIndex)) {
           currentAvailableIndices.push(oldPhotoIndex)
         }
-      }, 400) // Faster fade out duration
+      }, 1500) // Slower fade out duration - 1.5 seconds
     }
 
     // Start rotating photos with very fast timing
-    // Each photo changes every 1-2 seconds
     const scheduleNextRotation = () => {
-      const randomDelay = 2000 + Math.random() * 2000 // 1-2 seconds
+      const randomDelay = 6000 + Math.random() * 4000
       return setTimeout(() => {
         rotatePhoto()
         scheduleNextRotation() // Schedule next rotation
@@ -176,32 +181,8 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
 
     return () => clearTimeout(timeoutId)
   }, [displayedPhotos, allPhotos, availablePhotoIndices])
-  
-  // Show loading state or don't render until photos are loaded
-  if (isLoading || displayedPhotos.length === 0) {
-    return (
-      <section className="max-w-7xl mx-auto px-8 pt-2 pb-0">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Memories
-          </h2>
-        </div>
-        <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 md:gap-3 auto-rows-[100px] md:auto-rows-[150px] lg:auto-rows-[200px]">
-          {Array.from({ length: 13 }).map((_, index) => (
-            <div
-              key={index}
-              className="bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"
-              style={{
-                gridColumn: `span 2`,
-                gridRow: `span 1`,
-              }}
-            />
-          ))}
-        </div>
-      </section>
-    )
-  }
 
+  // No loading state needed - photos appear instantly!
   return (
     <section className="max-w-7xl mx-auto px-8 pt-2 pb-0">
       <div className="flex items-center justify-between mb-6">
@@ -250,7 +231,7 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
               onClick={() => onPhotoClick?.(photo)}
               className={`
                 group relative overflow-hidden rounded-3xl bg-muted cursor-pointer
-                transition-all duration-1500 ease-in-out
+                transition-all duration-[2000ms] ease-in-out
                 col-span-${colSpan} row-span-${rowSpan}
                 ${isAnimated && !isFading ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-6 scale-90"}
               `}
