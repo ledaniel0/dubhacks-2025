@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, FolderOpen, Sparkles, Users, ImageIcon, User } from "lucide-react"
+import { Home, FolderOpen, Sparkles, Users, ImageIcon, User, Compass } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navigation = [
@@ -8,6 +8,7 @@ const navigation = [
   { name: "Library", icon: ImageIcon, id: "library" },
   { name: "Albums", icon: FolderOpen, id: "albums" },
   { name: "Shared", icon: Users, id: "shared" },
+  { name: "Explore", icon: Compass, id: "explore" },
 ]
 
 interface SidebarProps {
@@ -24,7 +25,7 @@ export function Sidebar({ activeView, onNavigate }: SidebarProps) {
             <div className="h-10 w-10 rounded-xl animated-gradient flex items-center justify-center shadow-glow">
               <Sparkles className="h-6 w-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-sidebar-foreground bg-gradient-to-r from-[#FF6B35] via-[#E0338E] to-[#00B4D8] bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-[#FF6B35] via-[#E0338E] to-[#00B4D8] bg-clip-text text-transparent">
               Echo
             </span>
           </div>

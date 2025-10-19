@@ -12,23 +12,54 @@ interface RecentPhotosProps {
   onPhotoClick?: (photo: Photo) => void
 }
 
+// Fisher-Yates shuffle algorithm with seed for deterministic results
+function shuffleArrayWithSeed<T>(array: T[], seed: number): T[] {
+  const shuffled = [...array]
+  let random = seed
+  
+  const seededRandom = () => {
+    random = (random * 9301 + 49297) % 233280
+    return random / 233280
+  }
+  
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(seededRandom() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
 export function RecentPhotos({ onViewAll, onPhotoClick }: RecentPhotosProps) {
-  const recentPhotos = photoLibrary.slice(0, 13)
+  // Use a fixed seed for consistent shuffle on server and client
+  const [randomPhotos, setRandomPhotos] = useState<typeof photoLibrary>([])
   const [animatedPhotos, setAnimatedPhotos] = useState<Set<number>>(new Set())
+  
+  useEffect(() => {
+    // Only set random photos on client side after mount
+    const seed = 12345 // Fixed seed for consistency
+    setRandomPhotos(shuffleArrayWithSeed(photoLibrary, seed).slice(0, 13))
+  }, [])
 
   useEffect(() => {
-    recentPhotos.forEach((photo, index) => {
+    if (randomPhotos.length === 0) return
+    
+    randomPhotos.forEach((photo, index) => {
       setTimeout(() => {
         setAnimatedPhotos((prev) => new Set(prev).add(photo.id))
       }, index * 50)
     })
-  }, [])
+  }, [randomPhotos])
+  
+  // Don't render until photos are loaded to prevent hydration mismatch
+  if (randomPhotos.length === 0) {
+    return null
+  }
 
   return (
     <section className="max-w-7xl mx-auto px-8 pt-2 pb-0">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Recent Photos
+          Random Photos
         </h2>
         <Button
           onClick={onViewAll}
@@ -40,7 +71,7 @@ export function RecentPhotos({ onViewAll, onPhotoClick }: RecentPhotosProps) {
         </Button>
       </div>
       <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 md:gap-3 auto-rows-[100px] md:auto-rows-[150px] lg:auto-rows-[200px]">
-        {recentPhotos.map((photo, index) => {
+        {randomPhotos.map((photo, index) => {
           const isAnimated = animatedPhotos.has(photo.id)
 
           // Responsive layout: scales from 6 cols (mobile) -> 8 cols (tablet) -> 12 cols (desktop)
