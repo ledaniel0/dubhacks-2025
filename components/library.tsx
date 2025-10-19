@@ -11,6 +11,7 @@ import {
 import { useState } from "react"
 import { photoLibrary } from "@/lib/photo-data"
 import { PhotoCard } from "./photo-card"
+import type { Photo } from "@/lib/types"
 
 type SortOption = "date-desc" | "date-asc" | "name-asc" | "name-desc" | "location" | "liked"
 
@@ -28,9 +29,10 @@ interface LibraryProps {
   isSearchMode?: boolean
   searchQuery?: string
   isLoading?: boolean
+  onPhotoClick?: (photo: Photo) => void
 }
 
-export function Library({ searchResults, isSearchMode = false, searchQuery = "", isLoading = false }: LibraryProps = {}) {
+export function Library({ searchResults, isSearchMode = false, searchQuery = "", isLoading = false, onPhotoClick }: LibraryProps = {}) {
   const [likedPhotos, setLikedPhotos] = useState<Set<number>>(
     new Set(photoLibrary.filter((p) => p.liked).map((p) => p.id)),
   )
@@ -169,7 +171,7 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {sortedPhotos.map((photo) => (
-            <PhotoCard key={photo.id} photo={photo} isLiked={likedPhotos.has(photo.id)} onToggleLike={toggleLike} />
+            <PhotoCard key={photo.id} photo={photo} isLiked={likedPhotos.has(photo.id)} onToggleLike={toggleLike} onPhotoClick={onPhotoClick} />
           ))}
         </div>
       </div>

@@ -11,15 +11,15 @@ interface PhotoCardProps {
   photo: Photo
   isLiked: boolean
   onToggleLike: (id: number) => void
-  onClick?: () => void
+  onPhotoClick?: (photo: Photo) => void
 }
 
-export function PhotoCard({ photo, isLiked, onToggleLike, onClick }: PhotoCardProps) {
+export function PhotoCard({ photo, isLiked, onToggleLike, onPhotoClick }: PhotoCardProps) {
   return (
     <HoverCard openDelay={200}>
       <HoverCardTrigger asChild>
         <div
-          onClick={onClick}
+          onClick={() => onPhotoClick?.(photo)}
           className="group relative aspect-square overflow-hidden rounded-3xl bg-card border border-border/50 cursor-pointer transition-all duration-500 hover:shadow-layered-hover hover:scale-[1.03] hover:border-primary/30 magnetic-hover"
         >
           <img

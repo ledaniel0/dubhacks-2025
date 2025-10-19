@@ -11,9 +11,10 @@ interface TopHeaderProps {
   onSearch?: (query: string) => void
   showSearch?: boolean
   searchQuery?: string
+  onSearchQueryChange?: (query: string) => void
 }
 
-export function TopHeader({ onUploadClick, onSearch, showSearch = true, searchQuery = "" }: TopHeaderProps) {
+export function TopHeader({ onUploadClick, onSearch, showSearch = true, searchQuery = "", onSearchQueryChange }: TopHeaderProps) {
   const [isFocused, setIsFocused] = useState(false)
 
   const handleSearch = () => {
@@ -43,7 +44,7 @@ export function TopHeader({ onUploadClick, onSearch, showSearch = true, searchQu
                 <Input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => onSearch?.(e.target.value)}
+                  onChange={(e) => onSearchQueryChange?.(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                   placeholder='Try "my proudest moments" or "photos where I felt peaceful"'
                   onFocus={() => setIsFocused(true)}

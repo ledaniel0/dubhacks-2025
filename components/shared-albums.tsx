@@ -23,7 +23,7 @@ export function SharedAlbums({ onAlbumClick, onCreateSharedAlbum }: SharedAlbums
             className="bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 transition-opacity duration-200"
           >
             <Users className="h-4 w-4 mr-2" />
-            Share New Album
+            Create Shared Album
           </Button>
         </div>
 

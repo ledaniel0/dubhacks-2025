@@ -59,7 +59,7 @@ export function Sidebar({ activeView, onNavigate }: SidebarProps) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">You</p>
-              <p className="text-xs text-muted-foreground truncate">user@echo.com</p>
+              <p className="text-xs text-muted-foreground truncate">ledaniel@gmail.com</p>
             </div>
           </div>
         </div>

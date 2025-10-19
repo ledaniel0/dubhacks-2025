@@ -415,6 +415,128 @@ export const photoLibrary: Photo[] = [
     tags: ["salesforce", "internship", "milestone", "professional", "proudest"],
     liked: true,
   }),
+  
+  // San Francisco Photos
+  createPhoto({
+    id: 31,
+    name: "Golden Gate Bridge",
+    url: "/images/sf/IMG_0928.JPG",
+    description: "Iconic Golden Gate Bridge view",
+    date: "Fall 2024",
+    location: "San Francisco, CA",
+    tags: ["san francisco", "golden gate", "bridge", "landmark", "architecture"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 32,
+    name: "SF Skyline",
+    url: "/images/sf/IMG_0914.JPG",
+    description: "Beautiful San Francisco cityscape",
+    date: "Fall 2024",
+    location: "San Francisco, CA",
+    tags: ["san francisco", "skyline", "cityscape", "urban", "architecture"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 33,
+    name: "Coit Tower View",
+    url: "/images/sf/IMG_0899.jpg",
+    description: "Panoramic view from Coit Tower",
+    date: "Fall 2024",
+    location: "San Francisco, CA",
+    tags: ["san francisco", "coit tower", "panorama", "view", "landmark"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 34,
+    name: "Fisherman's Wharf",
+    url: "/images/sf/IMG_0888.JPG",
+    description: "Vibrant Fisherman's Wharf district",
+    date: "Fall 2024",
+    location: "San Francisco, CA",
+    tags: ["san francisco", "fishermans wharf", "waterfront", "tourist", "vibrant"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 35,
+    name: "Lombard Street",
+    url: "/images/sf/IMG_0853.JPG",
+    description: "The famous crooked street",
+    date: "Fall 2024",
+    location: "San Francisco, CA",
+    tags: ["san francisco", "lombard street", "crooked", "famous", "street"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 36,
+    name: "Cable Car",
+    url: "/images/sf/IMG_0839.JPG",
+    description: "Classic San Francisco cable car",
+    date: "Fall 2024",
+    location: "San Francisco, CA",
+    tags: ["san francisco", "cable car", "transportation", "classic", "historic"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 37,
+    name: "Alcatraz Island",
+    url: "/images/sf/IMG_0837.jpg",
+    description: "Historic Alcatraz Island",
+    date: "Fall 2024",
+    location: "San Francisco, CA",
+    tags: ["san francisco", "alcatraz", "island", "historic", "prison"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 38,
+    name: "SF Bay View",
+    url: "/images/sf/IMG_0828.JPG",
+    description: "Beautiful San Francisco Bay",
+    date: "Fall 2024",
+    location: "San Francisco, CA",
+    tags: ["san francisco", "bay", "water", "scenic", "peaceful"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 39,
+    name: "Chinatown",
+    url: "/images/sf/IMG_0814.JPG",
+    description: "Vibrant Chinatown district",
+    date: "Fall 2024",
+    location: "San Francisco, CA",
+    tags: ["san francisco", "chinatown", "culture", "vibrant", "district"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 40,
+    name: "SF Architecture",
+    url: "/images/sf/IMG_0810.jpg",
+    description: "Beautiful San Francisco architecture",
+    date: "Fall 2024",
+    location: "San Francisco, CA",
+    tags: ["san francisco", "architecture", "buildings", "urban", "beautiful"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 41,
+    name: "SF Sunset",
+    url: "/images/sf/IMG_0770.JPG",
+    description: "Stunning San Francisco sunset",
+    date: "Fall 2024",
+    location: "San Francisco, CA",
+    tags: ["san francisco", "sunset", "golden hour", "beautiful", "scenic"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 42,
+    name: "SF Streets",
+    url: "/images/sf/IMG_0118.JPG",
+    description: "Charming San Francisco streets",
+    date: "Fall 2024",
+    location: "San Francisco, CA",
+    tags: ["san francisco", "streets", "urban", "charming", "city"],
+    liked: true,
+  }),
 ]
 
 /**
@@ -457,6 +579,13 @@ export const albums: Album[] = [
     description: "Temples, tradition, and history",
     photoIds: [4, 15, 16, 19, 20],
     coverPhotoId: 19,
+  }),
+  createAlbum({
+    id: 6,
+    title: "San Francisco",
+    description: "Exploring the beautiful city by the bay",
+    photoIds: [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42],
+    coverPhotoId: 31,
   }),
 ]
 
@@ -540,6 +669,27 @@ export function validatePhotoReferences(): {
     valid: missingIds.length === 0,
     missingIds,
   }
+}
+
+/**
+ * Adds a new album to the albums array
+ * Returns the created album
+ */
+export function addAlbum(title: string, description: string, photoIds: number[]): Album {
+  const newId = Math.max(...albums.map(a => a.id), 0) + 1
+  const newAlbum = createAlbum({
+    id: newId,
+    title,
+    description,
+    photoIds,
+  })
+  
+  // Add to the albums array
+  albums.push(newAlbum)
+  
+  // In a real app, this would be persisted to a database
+  // For now, we'll just return the album (it won't persist between sessions)
+  return newAlbum
 }
 
 /**

@@ -8,11 +8,12 @@ import { SharedAlbums } from "@/components/shared-albums"
 import { Library } from "@/components/library"
 import { UploadModal } from "@/components/upload-modal"
 import { RecentPhotos } from "@/components/recent-photos"
+import { PhotoDetail } from "@/components/photo-detail"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Share2, Sparkles } from "lucide-react"
-import { photoLibrary, addSharedAlbum } from "@/lib/photo-data"
+import { photoLibrary, addSharedAlbum, addAlbum } from "@/lib/photo-data"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
 import type { Photo } from "@/lib/types"
@@ -29,9 +30,17 @@ export default function HomePage() {
   const [sharedAlbumDescription, setSharedAlbumDescription] = useState("")
   const [isCreatingSharedAlbum, setIsCreatingSharedAlbum] = useState(false)
   const [createdSharedAlbum, setCreatedSharedAlbum] = useState<{ id: number; name: string } | null>(null)
+  const [albumsUpdated, setAlbumsUpdated] = useState(0) // Trigger re-render when albums change
+  const [showAlbumSuccess, setShowAlbumSuccess] = useState(false)
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
+
+  const handleSearchQueryChange = (query: string) => {
+    setSearchQuery(query)
+  }
 
   const handleSearch = (query: string) => {
-    setSearchQuery(query)
+    if (!query.trim()) return
+    
     setIsSearchMode(true)
     setIsSearching(true)
     setSearchResults([])
@@ -61,11 +70,16 @@ export default function HomePage() {
   }
 
   const handleAlbumCreated = (title: string, description: string, photoIds: number[]) => {
-    // In production, this would save the album to your backend
-    console.log("Creating album:", { title, description, photoIds })
+    // Create and save the album
+    const newAlbum = addAlbum(title, description, photoIds)
+    console.log("Created album:", newAlbum)
     
-    // Optionally navigate to albums view
-    // setActiveView("albums")
+    // Trigger re-render of albums list
+    setAlbumsUpdated(prev => prev + 1)
+    
+    // Show success notification
+    setShowAlbumSuccess(true)
+    setTimeout(() => setShowAlbumSuccess(false), 3000) // Hide after 3 seconds
   }
 
   const handleCreateSharedAlbum = async () => {
@@ -126,6 +140,14 @@ export default function HomePage() {
     }
   }
 
+  const handlePhotoClick = (photo: Photo) => {
+    setSelectedPhoto(photo)
+  }
+
+  const handleClosePhotoDetail = () => {
+    setSelectedPhoto(null)
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar activeView={activeView} onNavigate={handleNavigate} />
@@ -133,6 +155,7 @@ export default function HomePage() {
         <TopHeader
           onUploadClick={() => setIsUploadModalOpen(true)}
           onSearch={handleSearch}
+          onSearchQueryChange={handleSearchQueryChange}
           showSearch={activeView === "home" || activeView === "search-results" || activeView === "library"}
           searchQuery={searchQuery}
         />
@@ -157,7 +180,7 @@ export default function HomePage() {
                       Create Shared Album
                     </Button>
                   </div>
-                  <AlbumsList onAlbumClick={(id) => console.log("Album clicked:", id)} isPinterestStyle={true} />
+                  <AlbumsList key={albumsUpdated} onAlbumClick={(id) => console.log("Album clicked:", id)} isPinterestStyle={true} />
                 </div>
               </div>
             )}
@@ -170,6 +193,7 @@ export default function HomePage() {
                     isLoading={isSearching}
                     onClearSearch={handleClearSearch}
                     onAlbumCreated={handleAlbumCreated}
+                    onPhotoClick={handlePhotoClick}
                     sharedAlbumContext={createdSharedAlbum ? {
                       albumId: createdSharedAlbum.id,
                       albumTitle: createdSharedAlbum.name,
@@ -180,7 +204,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {activeView === "albums" && <AlbumsList onAlbumClick={(id) => console.log("Album clicked:", id)} />}
+        {activeView === "albums" && <AlbumsList key={albumsUpdated} onAlbumClick={(id) => console.log("Album clicked:", id)} />}
 
         {activeView === "shared" && <SharedAlbums onAlbumClick={(id) => console.log("Shared album clicked:", id)} onCreateSharedAlbum={() => setIsCreateSharedAlbumOpen(true)} />}
 
@@ -190,6 +214,7 @@ export default function HomePage() {
             isSearchMode={isSearchMode}
             searchQuery={searchQuery}
             isLoading={isSearching}
+            onPhotoClick={handlePhotoClick}
           />
         )}
       </main>
@@ -304,6 +329,21 @@ export default function HomePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Success Notification */}
+      {showAlbumSuccess && (
+        <div className="fixed top-20 right-8 z-50 animate-in slide-in-from-right duration-300">
+          <div className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+            <div className="w-2 h-2 bg-white rounded-full"></div>
+            <span className="font-medium">Album created successfully!</span>
+          </div>
+        </div>
+      )}
+
+      {/* Photo Detail Modal */}
+      {selectedPhoto && (
+        <PhotoDetail photo={selectedPhoto} onClose={handleClosePhotoDetail} />
+      )}
     </div>
   )
 }
