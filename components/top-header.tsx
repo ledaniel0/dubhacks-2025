@@ -66,10 +66,10 @@ export function TopHeader({ onUploadClick, onSearch, showSearch = true }: TopHea
         )}
         <Button
           onClick={onUploadClick}
+          size="icon"
           className="animated-gradient shadow-layered hover:shadow-glow transition-all duration-300 hover:scale-105"
         >
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Photos
+          <Upload className="h-4 w-4" />
         </Button>
       </div>
     </header>
