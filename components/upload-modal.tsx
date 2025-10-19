@@ -211,174 +211,192 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
         )}
 
         {/* Tab Content */}
-        {activeTab === "upload" ? (
-          <>
-            <div
-              onDragEnter={() => setIsDragging(true)}
-              onDragLeave={handleDragLeave}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              className={cn(
-                "relative border-2 border-dashed rounded-xl p-12 text-center",
-                isDragging ? "border-primary bg-primary/5" : "border-border bg-muted/30",
-              )}
-            >
-              <div className="flex flex-col items-center gap-4">
-                <div
-                  className={cn(
-                    "h-16 w-16 rounded-full flex items-center justify-center",
-                    isDragging ? "bg-primary/20" : "bg-muted",
-                  )}
-                >
-                  <Upload className={cn("h-8 w-8", isDragging ? "text-primary" : "text-muted-foreground")} />
-                </div>
+        <div className="relative h-[400px] overflow-hidden">
+          {/* Local Upload Tab */}
+          <div className={cn(
+            "absolute inset-0 transition-transform duration-500 ease-in-out",
+            activeTab === "upload" ? "translate-x-0" : "-translate-x-full"
+          )}>
+            <div className="h-full flex flex-col">
+              <div
+                onDragEnter={() => setIsDragging(true)}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                className={cn(
+                  "relative border-2 border-dashed rounded-xl p-12 text-center flex-1 flex items-center justify-center",
+                  isDragging ? "border-primary bg-primary/5" : "border-border bg-muted/30",
+                )}
+              >
+                <div className="flex flex-col items-center gap-4">
+                  <div
+                    className={cn(
+                      "h-16 w-16 rounded-full flex items-center justify-center",
+                      isDragging ? "bg-primary/20" : "bg-muted",
+                    )}
+                  >
+                    <Upload className={cn("h-8 w-8", isDragging ? "text-primary" : "text-muted-foreground")} />
+                  </div>
 
-                <div>
-                  <p className="text-lg font-medium text-foreground mb-1">
-                    {isDragging ? "Drop your photos here" : "Drag and drop photos here"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">or click to browse</p>
-                </div>
+                  <div>
+                    <p className="text-lg font-medium text-foreground mb-1">
+                      {isDragging ? "Drop your photos here" : "Drag and drop photos here"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">or click to browse</p>
+                  </div>
 
-                <Button 
-                  size="lg" 
-                  className="bg-gradient-to-r from-primary to-accent text-primary-foreground active:scale-95 active:brightness-110"
-                  onClick={handleFileSelect}
-                >
-                  <ImageIcon className="h-5 w-5 mr-2" />
-                  Choose Files
-                </Button>
+                  <Button 
+                    size="lg" 
+                    className="bg-gradient-to-r from-primary to-accent text-primary-foreground active:scale-95 active:brightness-110"
+                    onClick={handleFileSelect}
+                  >
+                    <ImageIcon className="h-5 w-5 mr-2" />
+                    Choose Files
+                  </Button>
+                </div>
               </div>
+
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/jpeg,image/jpg,image/png,image/heic,image/heif"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+
+              <p className="text-xs text-muted-foreground text-center mt-4">
+                Supported formats: JPG, PNG, HEIC. Max file size: 50MB
+              </p>
             </div>
+          </div>
 
-            {/* Hidden file input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/jpeg,image/jpg,image/png,image/heic,image/heif"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-
-            <p className="text-xs text-muted-foreground text-center">
-              Supported formats: JPG, PNG, HEIC. Max file size: 50MB
-            </p>
-          </>
-        ) : activeTab === "cloud" ? (
-          <>
-            <div className="px-1">
-              <div className="grid grid-cols-1 gap-2 pr-1">
-                {cloudServices.map((service) => {
-                  const isConnected = connectedServices.has(service.id)
-                  return (
-                    <div
-                      key={service.id}
-                      className={cn(
-                        "flex items-center gap-3 p-3 rounded-lg border-2",
-                        isConnected
-                          ? "border-green-500 bg-green-50/50"
-                          : "border-border bg-muted/30 hover:border-primary hover:bg-primary/5"
-                      )}
-                    >
+          {/* Cloud Upload Tab */}
+          <div className={cn(
+            "absolute inset-0 transition-transform duration-500 ease-in-out",
+            activeTab === "cloud" ? "translate-x-0" : "translate-x-full"
+          )}>
+            <div className="h-full flex flex-col">
+              <div className="flex-1 overflow-y-auto px-1">
+                <div className="grid grid-cols-1 gap-2 pr-1">
+                  {cloudServices.map((service) => {
+                    const isConnected = connectedServices.has(service.id)
+                    return (
                       <div
+                        key={service.id}
                         className={cn(
-                          "h-10 w-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0",
-                          !isConnected && `bg-gradient-to-br ${service.color}`
+                          "flex items-center gap-3 p-3 rounded-lg border-2",
+                          isConnected
+                            ? "border-green-500 bg-green-50/50"
+                            : "border-border bg-muted/30 hover:border-primary hover:bg-primary/5"
                         )}
                       >
-                        {typeof service.icon === "string" ? (
-                          <span className="text-lg">{service.icon}</span>
-                        ) : (
-                          <div className="text-white">{service.icon}</div>
-                        )}
-                      </div>
-                      <div className="flex-1 text-left min-w-0">
-                        <p className="font-medium text-foreground text-sm">{service.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{service.description}</p>
-                      </div>
-                      <div>
-                        {service.id === "google-photos" ? (
-                          <Button
-                            size="sm"
-                            onClick={() => setActiveTab("google-photos")}
-                            className="bg-green-600 hover:bg-green-700 text-white active:scale-95 active:brightness-110"
-                          >
-                            View
-                          </Button>
-                        ) : isConnected ? (
-                          <span className="text-sm font-medium text-green-600">Connected ✓</span>
-                        ) : (
-                          <Button
-                            size="sm"
-                            onClick={() => handleServiceConnect(service.id)}
-                            className="bg-gradient-to-r from-primary to-accent text-primary-foreground active:scale-95 active:brightness-110"
-                          >
-                            Connect
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            <p className="text-xs text-muted-foreground text-center">
-              Your credentials are securely stored and encrypted. We never access your photos without permission.
-            </p>
-          </>
-        ) : (
-          <>
-            {/* Google Photos Selector */}
-            <div className="h-[400px] overflow-y-auto pr-2 -mr-2">
-              <div className="grid grid-cols-3 gap-3">
-                {googlePhotosImages.map((photo) => {
-                  const isSelected = selectedPhotos.has(photo)
-                  return (
-                    <button
-                      key={photo}
-                      onClick={() => togglePhotoSelection(photo)}
-                      className={cn(
-                        "relative aspect-square rounded-xl overflow-hidden border-2",
-                        isSelected
-                          ? "border-primary ring-2 ring-primary ring-offset-2"
-                          : "border-border hover:border-primary/50"
-                      )}
-                    >
-                      <img src={photo} alt="Uploaded photo preview" className="w-full h-full object-cover" />
-                      {isSelected && (
-                        <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                          <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
-                            ✓
-                          </div>
+                        <div
+                          className={cn(
+                            "h-10 w-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0",
+                            !isConnected && `bg-gradient-to-br ${service.color}`
+                          )}
+                        >
+                          {typeof service.icon === "string" ? (
+                            <span className="text-lg">{service.icon}</span>
+                          ) : (
+                            <div className="text-white">{service.icon}</div>
+                          )}
                         </div>
-                      )}
-                    </button>
-                  )
-                })}
+                        <div className="flex-1 text-left min-w-0">
+                          <p className="font-medium text-foreground text-sm">{service.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{service.description}</p>
+                        </div>
+                        <div>
+                          {service.id === "google-photos" ? (
+                            <Button
+                              size="sm"
+                              onClick={() => setActiveTab("google-photos")}
+                              className="bg-green-600 hover:bg-green-700 text-white active:scale-95 active:brightness-110"
+                            >
+                              View
+                            </Button>
+                          ) : isConnected ? (
+                            <span className="text-sm font-medium text-green-600">Connected ✓</span>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={() => handleServiceConnect(service.id)}
+                              className="bg-gradient-to-r from-primary to-accent text-primary-foreground active:scale-95 active:brightness-110"
+                            >
+                              Connect
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center justify-between pt-4 border-t">
-              <p className="text-sm text-muted-foreground">
-                {selectedPhotos.size} photo{selectedPhotos.size !== 1 ? "s" : ""} selected
+              <p className="text-xs text-muted-foreground text-center mt-4">
+                Your credentials are securely stored and encrypted. We never access your photos without permission.
               </p>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setActiveTab("cloud")} className="active:scale-95 active:brightness-110">
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleAddToLibrary}
-                  disabled={selectedPhotos.size === 0}
-                  className="bg-gradient-to-r from-primary to-accent text-primary-foreground active:scale-95 active:brightness-110"
-                >
-                  Add to Library ({selectedPhotos.size})
-                </Button>
+            </div>
+          </div>
+
+          {/* Google Photos Tab */}
+          <div className={cn(
+            "absolute inset-0 transition-transform duration-500 ease-in-out",
+            activeTab === "google-photos" ? "translate-x-0" : "translate-x-full"
+          )}>
+            <div className="h-full flex flex-col">
+              {/* Google Photos Selector */}
+              <div className="flex-1 overflow-y-auto pr-2 -mr-2">
+                <div className="grid grid-cols-3 gap-3">
+                  {googlePhotosImages.map((photo) => {
+                    const isSelected = selectedPhotos.has(photo)
+                    return (
+                      <button
+                        key={photo}
+                        onClick={() => togglePhotoSelection(photo)}
+                        className={cn(
+                          "relative aspect-square rounded-xl overflow-hidden border-2",
+                          isSelected
+                            ? "border-primary ring-2 ring-primary ring-offset-2"
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        <img src={photo} alt="Google Photo" className="w-full h-full object-cover" />
+                        {isSelected && (
+                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                            <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                              ✓
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-4 border-t">
+                <p className="text-sm text-muted-foreground">
+                  {selectedPhotos.size} photo{selectedPhotos.size !== 1 ? "s" : ""} selected
+                </p>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setActiveTab("cloud")} className="active:scale-95 active:brightness-110">
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleAddToLibrary}
+                    disabled={selectedPhotos.size === 0}
+                    className="bg-gradient-to-r from-primary to-accent text-primary-foreground active:scale-95 active:brightness-110"
+                  >
+                    Add to Library ({selectedPhotos.size})
+                  </Button>
+                </div>
               </div>
             </div>
-          </>
-        )}
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
     </>
