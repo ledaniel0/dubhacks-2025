@@ -50,19 +50,21 @@ export default function HomePage() {
   const handleSearch = (query: string) => {
     if (!query.trim()) return
     
-    // If already in search mode and have results, treat as refine
-    if (isSearchMode && searchResults.length > 0) {
-      setRefineQuery(query)
-      setSearchQuery(query)
-      return
-    }
+    // Check if this is a refinement or new search
+    const isRefinement = isSearchMode && searchResults.length > 0
     
-    // Otherwise, do a new search
+    // Set states - for refinement update refineQuery, for new search update initialSearchQuery
     setIsSearchMode(true)
     setIsSearching(true)
-    setSearchResults([])
-    setInitialSearchQuery(query)
-    setRefineQuery("")
+    setSearchQuery(query)
+    
+    if (isRefinement) {
+      setRefineQuery(query)
+    } else {
+      setSearchResults([])
+      setInitialSearchQuery(query)
+      setRefineQuery("")
+    }
     
     // Simulate AI search processing with delay (like ChatGPT)
     setTimeout(async () => {
@@ -72,13 +74,15 @@ export default function HomePage() {
         const data = await response.json()
         const photos: Photo[] = data.photos || []
         
-        // Filter photos based on query
-        const results = photos.filter(
-          (photo) =>
-            photo.name.toLowerCase().includes(query.toLowerCase()) ||
-            photo.location.toLowerCase().includes(query.toLowerCase()) ||
-            photo.tags.some((tag) => tag.toLowerCase().includes(query.toLowerCase())) ||
-            photo.description?.toLowerCase().includes(query.toLowerCase()),
+        // Filter photos based on query - split query into words
+        const queryWords = query.toLowerCase().trim().split(/\s+/).filter(word => word.length > 0)
+        const results = photos.filter((photo) =>
+          queryWords.some((word) =>
+            photo.name.toLowerCase().includes(word) ||
+            photo.location.toLowerCase().includes(word) ||
+            photo.tags.some((tag) => tag.toLowerCase().includes(word)) ||
+            photo.description?.toLowerCase().includes(word)
+          )
         )
         
         setSearchResults(results)

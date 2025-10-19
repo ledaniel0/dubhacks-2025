@@ -300,10 +300,10 @@ export function PhotoBatch({ photos, searchQuery, refineQuery = "", isLoading = 
       <div className="max-w-7xl mx-auto px-8 py-8 pb-32">
         <div className="mb-6">
           <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
-            {refineQuery.trim() ? `Showing ${sortedFilteredPhotos.length} of ${photos.length}` : `Found ${photos.length}`} {photos.length === 1 ? "Photo" : "Photos"}
+            {refineQuery.trim() ? `Showing ${sortedFilteredPhotos.length}` : `Found ${sortedFilteredPhotos.length}`} {sortedFilteredPhotos.length === 1 ? "Photo" : "Photos"}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Results for "{searchQuery}"{refineQuery.trim() ? ` refined by "${refineQuery}"` : ""} • Select photos to create an album
+            Results for "{refineQuery.trim() || searchQuery}"
           </p>
         </div>
 
@@ -453,14 +453,7 @@ export function PhotoBatch({ photos, searchQuery, refineQuery = "", isLoading = 
                       >
                         {selectedPhotoIds.length}
                       </span>{" "}
-                      of {photos.length} photos selected
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {selectedPhotoIds.length === 0
-                        ? "Click photos to select them"
-                        : selectedPhotoIds.length === 1
-                          ? "Select more to create an album"
-                          : "Ready to create an album"}
+                      photos selected
                     </p>
                   </div>
                 </div>
