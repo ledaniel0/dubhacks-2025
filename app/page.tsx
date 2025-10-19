@@ -111,8 +111,8 @@ export default function HomePage() {
 
   const handleNavigate = (view: string) => {
     setActiveView(view)
-    // Clear search mode when navigating away from home
-    if (view !== "home") {
+    // Clear search mode when navigating away from home and library (pages that support search)
+    if (view !== "home" && view !== "library") {
       handleClearSearch()
     }
   }
@@ -174,7 +174,14 @@ export default function HomePage() {
 
         {activeView === "shared" && <SharedAlbums onAlbumClick={(id) => console.log("Shared album clicked:", id)} onCreateSharedAlbum={() => setIsCreateSharedAlbumOpen(true)} />}
 
-        {activeView === "library" && <Library />}
+        {activeView === "library" && (
+          <Library 
+            searchResults={isSearchMode ? searchResults : undefined}
+            isSearchMode={isSearchMode}
+            searchQuery={searchQuery}
+            isLoading={isSearching}
+          />
+        )}
       </main>
 
       <UploadModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} />
