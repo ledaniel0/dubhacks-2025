@@ -74,8 +74,12 @@ export default function HomePage() {
     setIsCreatingSharedAlbum(true)
     await new Promise((resolve) => setTimeout(resolve, 800))
 
+    // Store the title before clearing it
+    const albumTitle = sharedAlbumTitle.trim()
+    const albumDescription = sharedAlbumDescription.trim()
+
     // Create the shared album
-    const newSharedAlbum = addSharedAlbum(sharedAlbumTitle.trim(), sharedAlbumDescription.trim(), [])
+    const newSharedAlbum = addSharedAlbum(albumTitle, albumDescription, [])
     setCreatedSharedAlbum(newSharedAlbum)
     
     console.log("Created shared album:", newSharedAlbum)
@@ -83,8 +87,13 @@ export default function HomePage() {
     setIsCreatingSharedAlbum(false)
     setIsCreateSharedAlbumOpen(false)
     
+    // Clear form fields after successful creation
+    setSharedAlbumTitle("")
+    setSharedAlbumDescription("")
+    setCreatedSharedAlbum(null)
+    
     // Navigate to photo selection mode and trigger search
-    handleSearch(sharedAlbumTitle.trim())
+    handleSearch(albumTitle)
   }
 
   const handleCloseSharedAlbumDialog = () => {
