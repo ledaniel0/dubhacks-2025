@@ -5,12 +5,14 @@ import Image from "next/image"
 import { useState, useEffect } from "react"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import type { Photo } from "@/lib/types"
 
 interface RecentPhotosProps {
   onViewAll?: () => void
+  onPhotoClick?: (photo: Photo) => void
 }
 
-export function RecentPhotos({ onViewAll }: RecentPhotosProps) {
+export function RecentPhotos({ onViewAll, onPhotoClick }: RecentPhotosProps) {
   const recentPhotos = photoLibrary.slice(0, 13)
   const [animatedPhotos, setAnimatedPhotos] = useState<Set<number>>(new Set())
 
@@ -66,9 +68,10 @@ export function RecentPhotos({ onViewAll }: RecentPhotosProps) {
           return (
             <div
               key={photo.id}
+              onClick={() => onPhotoClick?.(photo)}
               className={`
                 group relative overflow-hidden rounded-3xl bg-muted cursor-pointer
-                transition-all duration-500 hover:scale-[1.03] magnetic-hover
+                transition-all duration-300
                 col-span-${colSpan} row-span-${rowSpan}
                 ${isAnimated ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
               `}
@@ -82,18 +85,8 @@ export function RecentPhotos({ onViewAll }: RecentPhotosProps) {
                 src={photo.url || "/placeholder.svg"}
                 alt={photo.location}
                 fill
-                className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+                className="object-cover transition-transform duration-300 group-hover:scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-              <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-full group-hover:translate-y-0 transition-all duration-500">
-                <div className="glass-effect-dark rounded-xl p-3 border border-white/20 backdrop-blur-xl">
-                  <p className="text-sm font-semibold truncate text-white mb-1">{photo.location}</p>
-                  <p className="text-xs text-white/90">{photo.date}</p>
-                </div>
-              </div>
-
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-bl-full" />
             </div>
           )
         })}
