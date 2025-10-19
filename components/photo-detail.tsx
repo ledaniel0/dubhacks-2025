@@ -65,7 +65,7 @@ export function PhotoDetail({ photo, onClose, isLiked = false, onToggleLike }: P
   }
 
   return (
-    <div className="fixed inset-0 z-60 bg-background/95 backdrop-blur-sm" onClick={handleBackdropClick}>
+    <div className="fixed inset-0 z-[60] bg-background/95 backdrop-blur-sm" onClick={handleBackdropClick}>
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-10 glass-effect border-b border-border/50">
         <div className="flex items-center justify-between px-8 py-4">

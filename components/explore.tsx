@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useRef, useEffect, useMemo } from "react"
-import { Compass, Search, MapPin } from "lucide-react"
+import { Compass, Search, MapPin, Sparkles } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { PublicAlbumCard } from "./public-album-card"
 import { publicAlbums } from "@/lib/photo-data"
-import type { PublicAlbum } from "@/lib/types"
+import type { PublicAlbum, Photo } from "@/lib/types"
 
 interface ExploreProps {
   onAlbumClick?: (album: PublicAlbum) => void
@@ -14,12 +14,83 @@ interface ExploreProps {
 export function Explore({ onAlbumClick }: ExploreProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [displayCount, setDisplayCount] = useState(12)
+  const [recentPhotos, setRecentPhotos] = useState<Photo[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
-  // Filter albums based on search
+  // Fetch recent photos on mount
+  useEffect(() => {
+    async function fetchRecentPhotos() {
+      try {
+        setIsLoading(true)
+        const response = await fetch('/api/photos')
+        const data = await response.json()
+        const photos: Photo[] = data.photos || []
+        
+        // Get recent photos (last 20)
+        const recent = photos.slice(0, 20)
+        setRecentPhotos(recent)
+      } catch (error) {
+        console.error('Error fetching recent photos:', error)
+        setRecentPhotos([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchRecentPhotos()
+  }, [])
+
+  // Suggest albums based on recent photos
+  const suggestedAlbums = useMemo(() => {
+    if (recentPhotos.length === 0) return publicAlbums.slice(0, 3) // Show first 3 if no recent photos
+    
+    const suggestions: { album: PublicAlbum; score: number }[] = []
+    
+    publicAlbums.forEach(album => {
+      let score = 0
+      
+      // Analyze recent photos for matches
+      recentPhotos.forEach(photo => {
+        // Check location matches
+        if (photo.location.toLowerCase().includes(album.location.toLowerCase().split(',')[0])) {
+          score += 3
+        }
+        
+        // Check tag matches
+        photo.tags.forEach(tag => {
+          if (album.tags.some(albumTag => albumTag.toLowerCase().includes(tag.toLowerCase()))) {
+            score += 2
+          }
+        })
+        
+        // Check description matches
+        if (photo.description?.toLowerCase().includes(album.title.toLowerCase())) {
+          score += 4
+        }
+        
+        // Check name matches
+        if (photo.name.toLowerCase().includes(album.title.toLowerCase())) {
+          score += 2
+        }
+      })
+      
+      if (score > 0) {
+        suggestions.push({ album, score })
+      }
+    })
+    
+    // Sort by score and return top suggestions
+    return suggestions
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 6)
+      .map(item => item.album)
+  }, [recentPhotos])
+
+  // Filter albums based on search or show suggestions
   const filteredAlbums = useMemo(() => {
-    if (!searchQuery.trim()) return publicAlbums
+    if (!searchQuery.trim()) return suggestedAlbums
 
     const query = searchQuery.toLowerCase()
     return publicAlbums.filter(
@@ -29,7 +100,7 @@ export function Explore({ onAlbumClick }: ExploreProps) {
         album.description.toLowerCase().includes(query) ||
         album.tags.some((tag) => tag.toLowerCase().includes(query))
     )
-  }, [searchQuery])
+  }, [searchQuery, suggestedAlbums])
 
   const displayedAlbums = useMemo(() =>
     filteredAlbums.slice(0, displayCount),
@@ -79,7 +150,7 @@ export function Explore({ onAlbumClick }: ExploreProps) {
             </h1>
           </div>
           <p className="text-muted-foreground text-lg">
-            Discover and contribute to community photo collections from landmarks around the world
+            AI-suggested albums based on your recent photos and shared community experiences
           </p>
         </div>
 
@@ -88,7 +159,7 @@ export function Explore({ onAlbumClick }: ExploreProps) {
           <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search by location, landmark, or tags..."
+            placeholder="Search by event, place, or tags..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-12 h-12 text-base bg-card/50 backdrop-blur-sm border-border/50 focus:border-primary/50"
@@ -98,27 +169,47 @@ export function Explore({ onAlbumClick }: ExploreProps) {
         {/* Stats Bar */}
         <div className="flex items-center gap-6 mb-8 p-4 rounded-2xl glass-effect border border-border/50">
           <div className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-primary" />
+            {isLoading ? (
+              <div className="h-5 w-5 rounded-full bg-primary/20 animate-pulse" />
+            ) : (
+              <Sparkles className="h-5 w-5 text-primary" />
+            )}
             <span className="text-foreground font-medium">
-              {filteredAlbums.length} {filteredAlbums.length === 1 ? 'Location' : 'Locations'}
+              {isLoading ? 'Analyzing your photos...' : `${filteredAlbums.length} ${filteredAlbums.length === 1 ? 'Suggestion' : 'Suggestions'}`}
             </span>
           </div>
           <div className="h-4 w-px bg-border" />
           <div className="text-muted-foreground text-sm">
-            {searchQuery ? `Searching for "${searchQuery}"` : 'Showing all public albums'}
+            {isLoading ? 'Finding relevant albums...' : searchQuery ? `Searching for "${searchQuery}"` : 'Based on your recent uploads'}
           </div>
         </div>
 
         {/* Albums Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayedAlbums.map((album) => (
-            <PublicAlbumCard
-              key={album.id}
-              album={album}
-              onClick={() => onAlbumClick?.(album)}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={index}
+                className="rounded-3xl bg-card/80 glass-effect border border-border/50 p-6 animate-pulse"
+              >
+                <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-2xl mb-4" />
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
+                <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {displayedAlbums.map((album) => (
+              <PublicAlbumCard
+                key={album.id}
+                album={album}
+                onClick={() => onAlbumClick?.(album)}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Load More Trigger */}
         {displayCount < filteredAlbums.length && (

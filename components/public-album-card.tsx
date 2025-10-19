@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import type { PublicAlbum } from "@/lib/types"
+import { getPublicAlbumCoverPhoto } from "@/lib/photo-data"
 
 interface PublicAlbumCardProps {
   album: PublicAlbum
@@ -14,6 +15,7 @@ interface PublicAlbumCardProps {
 
 export function PublicAlbumCard({ album, onClick, variant = "grid" }: PublicAlbumCardProps) {
   const isEmpty = album.photoCount === 0
+  const coverPhoto = !isEmpty && album.photoIds.length > 0 ? getPublicAlbumCoverPhoto(album.photoIds[0]) : null
 
   if (variant === "compact") {
     return (
@@ -94,7 +96,7 @@ export function PublicAlbumCard({ album, onClick, variant = "grid" }: PublicAlbu
           </div>
         ) : (
           <img
-            src="/placeholder.svg"
+            src={coverPhoto?.url || "/placeholder.svg"}
             alt={album.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
@@ -114,7 +116,7 @@ export function PublicAlbumCard({ album, onClick, variant = "grid" }: PublicAlbu
       </div>
 
       {/* Content */}
-      <div className="p-6">
+      <div className="p-6 flex flex-col min-h-[200px]">
         <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors duration-200">
           {album.title}
         </h3>
@@ -124,7 +126,7 @@ export function PublicAlbumCard({ album, onClick, variant = "grid" }: PublicAlbu
           <span>{album.location}</span>
         </div>
 
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+        <p className="text-sm text-muted-foreground mb-4 line-clamp-2 min-h-[2.5rem]">
           {album.description}
         </p>
 
@@ -140,6 +142,9 @@ export function PublicAlbumCard({ album, onClick, variant = "grid" }: PublicAlbu
             <span>{album.photoCount}</span>
           </div>
         </div>
+
+        {/* Spacer to push button to bottom */}
+        <div className="flex-grow" />
 
         {/* CTA Button */}
         <Button
