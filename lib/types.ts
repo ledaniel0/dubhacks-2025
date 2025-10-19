@@ -14,6 +14,23 @@ export interface Photo {
   aperture?: string
   iso?: string
   focalLength?: string
+  // AI-generated metadata
+  aiDescription?: string // Detailed description from Gemini
+  aiTags?: string[] // Tags extracted from AI analysis
+  mood?: string // Mood/emotion of the photo (e.g., "joyful", "peaceful", "energetic")
+  detectedFaces?: FaceDetection[] // Faces detected in the photo
+}
+
+export interface FaceDetection {
+  id: string // Unique identifier for this face
+  boundingBox?: {
+    x: number
+    y: number
+    width: number
+    height: number
+  }
+  personId?: string // ID to group photos by person (populated later)
+  confidence?: number // Confidence score of face detection
 }
 
 export interface Album {

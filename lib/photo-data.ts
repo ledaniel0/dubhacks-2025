@@ -39,6 +39,10 @@ export function createPhoto(data: {
   aperture?: string
   iso?: string
   focalLength?: string
+  aiDescription?: string
+  aiTags?: string[]
+  mood?: string
+  detectedFaces?: any[]
 }): Photo {
   return {
     id: data.id,
@@ -56,6 +60,10 @@ export function createPhoto(data: {
     aperture: data.aperture,
     iso: data.iso,
     focalLength: data.focalLength,
+    aiDescription: data.aiDescription,
+    aiTags: data.aiTags,
+    mood: data.mood,
+    detectedFaces: data.detectedFaces,
   }
 }
 
