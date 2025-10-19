@@ -75,7 +75,7 @@ export default function HomePage() {
             {/* Home Content - Only visible when NOT in search mode */}
             {!isSearchMode && (
               <div className="transition-all duration-500">
-                <RecentPhotos />
+                <RecentPhotos onViewAll={() => handleNavigate("library")} />
                 <div className="max-w-7xl mx-auto px-8 py-12">
                   <h2 className="text-2xl font-semibold text-foreground mb-6">Albums</h2>
                   <AlbumsList onAlbumClick={(id) => console.log("Album clicked:", id)} isPinterestStyle={true} />

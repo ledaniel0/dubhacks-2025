@@ -15,9 +15,9 @@ All photos in Echo are managed through a single source of truth: `lib/photo-data
    \`\`\`typescript
    // In lib/photo-data.ts
    export const photoLibrary: Photo[] = [
-   // ... existing photos (currently 1-21) ...
+   // ... existing photos (currently 1-30) ...
    createPhoto({
-   id: 22, // Use next available ID (current max is 21)
+   id: 31, // Use next available ID (current max is 30)
    name: "My Awesome Photo",
    url: "/my-awesome-photo.jpg",
    date: "January 15, 2025",
@@ -41,8 +41,8 @@ To add a photo to an album, just add its ID to the album's `photoIds` array:
 export const albums: Album[] = [
 {
 id: 1,
-title: "Tokyo Highlights",
-photoIds: [1, 2, 5, 7, 8, 9, 10, 11, 13, 18, 22], // Add your photo ID here
+title: "DubHacks 2025",
+photoIds: [22, 23, 24, 25, 26, 27, 31], // Add your photo ID here
 // ... rest of album config
 }
 ]
@@ -54,13 +54,13 @@ Use the `createAlbum()` helper:
 
 \`\`\`typescript
 export const albums: Album[] = [
-// ... existing albums (currently 3 albums) ...
+// ... existing albums (currently 5 albums) ...
 createAlbum({
-id: 4,
+id: 6,
 title: "Winter Wonderland",
-photoIds: [22, 23, 24], // Use actual photo IDs from your library
+photoIds: [31, 32, 33], // Use actual photo IDs from your library
 description: "Snowy adventures",
-coverPhotoId: 22 // Optional: specify cover photo
+coverPhotoId: 31 // Optional: specify cover photo
 })
 ]
 \`\`\`
@@ -99,8 +99,8 @@ coverPhotoId?: number // ID of cover photo (defaults to first)
 
 \`\`\`
 lib/photo-data.ts → Single source of truth for all data
-├── photoLibrary[] → All photos (currently 21 photos)
-├── albums[] → Personal albums (currently 3 albums)
+├── photoLibrary[] → All photos (currently 30 photos)
+├── albums[] → Personal albums (currently 5 albums)
 └── sharedAlbums[] → Shared albums (currently 3 albums)
 
 components/
@@ -161,14 +161,14 @@ The search functionality is implemented with a native, single-page experience:
 // Add multiple photos at once
 const newPhotos = [
 createPhoto({
-id: 22, // Next available ID (current max is 21)
+id: 31, // Next available ID (current max is 30)
 name: "Mountain Peak",
 url: "/mountain-peak.jpg",
 date: "January 15, 2025",
 tags: ["mountain", "nature"]
 }),
 createPhoto({
-id: 23,
+id: 32,
 name: "Forest Path",
 url: "/forest-path.jpg",
 date: "January 16, 2025",
@@ -177,17 +177,17 @@ tags: ["forest", "hiking"]
 ]
 
 export const photoLibrary: Photo[] = [
-// ... existing photos (currently 1-21) ...
+// ... existing photos (currently 1-30) ...
 ...newPhotos
 ]
 
 // Create an album with these photos
 export const albums: Album[] = [
-// ... existing albums (currently 3 albums) ...
+// ... existing albums (currently 5 albums) ...
 createAlbum({
-id: 4,
+id: 6,
 title: "Nature Collection",
-photoIds: [22, 23]
+photoIds: [31, 32]
 })
 ]
 \`\`\`

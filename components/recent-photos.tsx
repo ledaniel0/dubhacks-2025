@@ -1,11 +1,14 @@
 "use client"
 
 import { photoLibrary } from "@/lib/photo-data"
-import { Heart } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 
-export function RecentPhotos() {
+interface RecentPhotosProps {
+  onViewAll?: () => void
+}
+
+export function RecentPhotos({ onViewAll }: RecentPhotosProps) {
   const recentPhotos = photoLibrary.slice(0, 12)
   const [animatedPhotos, setAnimatedPhotos] = useState<Set<number>>(new Set())
 
@@ -20,10 +23,13 @@ export function RecentPhotos() {
   return (
     <section className="max-w-7xl mx-auto px-8 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
           Recent Photos
         </h2>
-        <button className="text-sm font-medium text-primary hover:text-accent transition-colors duration-200">
+        <button
+          onClick={onViewAll}
+          className="text-sm font-medium text-primary hover:text-accent transition-colors duration-200"
+        >
           View All →
         </button>
       </div>
@@ -60,12 +66,6 @@ export function RecentPhotos() {
                   <p className="text-xs text-white/90">{photo.date}</p>
                 </div>
               </div>
-
-              {photo.liked && (
-                <div className="absolute top-3 right-3 glass-effect-dark rounded-full p-2 border border-white/30 shadow-glow">
-                  <Heart className="h-4 w-4 fill-red-500 text-red-500 animate-pulse" />
-                </div>
-              )}
 
               <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-bl-full" />
             </div>
