@@ -16,10 +16,10 @@ import { Organize } from "@/components/organize"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Share2, Sparkles } from "lucide-react"
+import { Share2, Sparkles, Download, FolderPlus, Upload } from "lucide-react"
 import { photoLibrary, addSharedAlbum, addAlbum, albums } from "@/lib/photo-data"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { Photo, Album, PublicAlbum } from "@/lib/types"
 
 export default function HomePage() {
@@ -45,10 +45,25 @@ export default function HomePage() {
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isModalActive, setIsModalActive] = useState(false)
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [selectedPhotos, setSelectedPhotos] = useState<Photo[]>([])
+  const [clearSelectionTrigger, setClearSelectionTrigger] = useState(0)
 
   const handleSearchQueryChange = (query: string) => {
     setSearchQuery(query)
   }
+
+  const handleSelectionChange = (photos: Photo[], isSelectionMode: boolean) => {
+    setSelectedPhotos(photos)
+    setIsSelectionMode(isSelectionMode)
+  }
+
+  const handleClearSelection = () => {
+    setSelectedPhotos([])
+    setIsSelectionMode(false)
+    setClearSelectionTrigger(prev => prev + 1) // Trigger Library component to clear selections
+  }
+
 
   const handleSearch = (query: string) => {
     if (!query.trim()) return
@@ -240,13 +255,14 @@ export default function HomePage() {
       />
       {(activeView === "home" || activeView === "search-results" || activeView === "library") && (
         <TopHeader
-          onUploadClick={() => setIsUploadModalOpen(true)}
           onSearch={handleSearch}
           onSearchQueryChange={handleSearchQueryChange}
           showSearch={activeView === "home" || activeView === "search-results" || activeView === "library"}
           searchQuery={searchQuery}
           isSidebarCollapsed={isSidebarCollapsed}
           isModalActive={isModalActive}
+          pageTitle={activeView === "home" ? "Memories" : activeView === "library" ? "Library" : undefined}
+          onUploadClick={() => setIsUploadModalOpen(true)}
         />
       )}
 
@@ -261,26 +277,6 @@ export default function HomePage() {
             {!isSearchMode && (
               <div className="transition-all duration-500 pt-4">
                 <RecentPhotos onViewAll={() => handleNavigate("library")} onPhotoClick={handlePhotoClick} refreshTrigger={refreshTrigger} />
-                <div className="max-w-7xl mx-auto px-8 py-12">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Albums</h2>
-                    <Button
-                      onClick={() => setIsCreateSharedAlbumOpen(true)}
-                      variant="outline"
-                      className="border-2 border-primary/40 text-primary hover:text-primary hover:bg-gradient-to-r hover:from-[#FF6B35]/20 hover:via-[#E0338E]/20 hover:to-[#9D4EDD]/20 hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105 font-semibold"
-                    >
-                      <Share2 className="h-4 w-4 mr-2" />
-                      Create Shared Album
-                    </Button>
-                  </div>
-                  <AlbumsList key={albumsUpdated} onAlbumClick={handleAlbumClick} isPinterestStyle={true} />
-                </div>
-
-                {/* Explore Preview Section */}
-                <ExplorePreview
-                  onViewAll={() => handleNavigate("explore")}
-                  onAlbumClick={handlePublicAlbumClick}
-                />
               </div>
             )}
 
@@ -334,6 +330,8 @@ export default function HomePage() {
                 isLoading={false}
                 onPhotoClick={handlePhotoClick}
                 refreshTrigger={refreshTrigger}
+                onSelectionChange={handleSelectionChange}
+                clearSelectionTrigger={clearSelectionTrigger}
               />
             )}
           </>
@@ -492,6 +490,135 @@ export default function HomePage() {
           }}
         />
       )}
+
+      {/* Selection Footer */}
+      <div className={cn(
+        "fixed bottom-0 right-0 z-40 transition-all duration-500 ease-in-out",
+        isModalActive ? "left-0" : isSidebarCollapsed ? "left-16" : "left-64",
+        isSelectionMode 
+          ? "translate-y-0 opacity-100" 
+          : "translate-y-full opacity-0 pointer-events-none"
+      )}>
+        <div className={cn(
+          "glass-effect border-t border-border/50 shadow-layered-hover transition-all duration-500",
+          isSelectionMode ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
+        )}>
+          <div className="max-w-7xl mx-auto px-8 py-4">
+            <div className={cn(
+              "flex items-center justify-between gap-4 transition-all duration-700 delay-100",
+              isSelectionMode ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            )}>
+              {/* Left side: Selection info and controls */}
+              <div className={cn(
+                "flex items-center gap-4 transition-all duration-700 delay-200",
+                isSelectionMode ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+              )}>
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center transition-all duration-500",
+                    isSelectionMode ? "animate-in zoom-in-50 duration-500 delay-100" : ""
+                  )}>
+                    <Sparkles className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      {selectedPhotos.length} photo{selectedPhotos.length !== 1 ? 's' : ''} selected
+                    </p>
+                  </div>
+                </div>
+                {selectedPhotos.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleClearSelection}
+                    className={cn(
+                      "text-muted-foreground hover:text-foreground transition-all duration-500",
+                      isSelectionMode ? "animate-in slide-in-from-left-4 fade-in duration-500 delay-300" : ""
+                    )}
+                  >
+                    Clear Selection
+                  </Button>
+                )}
+              </div>
+
+              {/* Right side: Action buttons */}
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  disabled={selectedPhotos.length === 0}
+                  className={cn(
+                    "border-2 border-primary/40 transition-all duration-300",
+                    isSelectionMode ? "animate-in slide-in-from-right-4 fade-in duration-500 delay-200" : "",
+                    selectedPhotos.length > 0
+                      ? "hover:border-primary hover:bg-primary/10"
+                      : "opacity-50 cursor-not-allowed",
+                  )}
+                  style={{
+                    transitionDelay: selectedPhotos.length > 0 ? '0ms' : undefined
+                  }}
+                >
+                  <Share2 className="h-5 w-5 mr-2" />
+                  Share
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  disabled={selectedPhotos.length === 0}
+                  className={cn(
+                    "border-2 border-primary/40 transition-all duration-300",
+                    isSelectionMode ? "animate-in slide-in-from-right-4 fade-in duration-500 delay-300" : "",
+                    selectedPhotos.length > 0
+                      ? "hover:border-primary hover:bg-primary/10"
+                      : "opacity-50 cursor-not-allowed",
+                  )}
+                  style={{
+                    transitionDelay: selectedPhotos.length > 0 ? '0ms' : undefined
+                  }}
+                >
+                  <Download className="h-5 w-5 mr-2" />
+                  Download
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  disabled={selectedPhotos.length === 0}
+                  className={cn(
+                    "border-2 border-primary/40 transition-all duration-300",
+                    isSelectionMode ? "animate-in slide-in-from-right-4 fade-in duration-500 delay-400" : "",
+                    selectedPhotos.length > 0
+                      ? "hover:border-primary hover:bg-primary/10"
+                      : "opacity-50 cursor-not-allowed",
+                  )}
+                  style={{
+                    transitionDelay: selectedPhotos.length > 0 ? '0ms' : undefined
+                  }}
+                >
+                  <FolderPlus className="h-5 w-5 mr-2" />
+                  Add to Album
+                </Button>
+                <Button
+                  size="lg"
+                  disabled={selectedPhotos.length === 0}
+                  className={cn(
+                    "bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg transition-all duration-300",
+                    isSelectionMode ? "animate-in slide-in-from-right-4 fade-in duration-500 delay-500" : "",
+                    selectedPhotos.length > 0
+                      ? "hover:shadow-glow hover:scale-105"
+                      : "opacity-50 cursor-not-allowed",
+                  )}
+                  style={{
+                    transitionDelay: selectedPhotos.length > 0 ? '0ms' : undefined
+                  }}
+                >
+                  <FolderPlus className="h-5 w-5 mr-2" />
+                  Create Album from {selectedPhotos.length} {selectedPhotos.length === 1 ? "Photo" : "Photos"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

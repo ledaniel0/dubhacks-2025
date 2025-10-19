@@ -1,22 +1,23 @@
 "use client"
 
-import { Search, Sparkles, Send, Upload } from "lucide-react"
+import { Search, Send, Upload } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface TopHeaderProps {
-  onUploadClick: () => void
   onSearch?: (query: string) => void
   showSearch?: boolean
   searchQuery?: string
   onSearchQueryChange?: (query: string) => void
   isSidebarCollapsed?: boolean
   isModalActive?: boolean
+  pageTitle?: string
+  onUploadClick?: () => void
 }
 
-export function TopHeader({ onUploadClick, onSearch, showSearch = true, searchQuery = "", onSearchQueryChange, isSidebarCollapsed = false, isModalActive = false }: TopHeaderProps) {
+export function TopHeader({ onSearch, showSearch = true, searchQuery = "", onSearchQueryChange, isSidebarCollapsed = false, isModalActive = false, pageTitle, onUploadClick }: TopHeaderProps) {
   const [isFocused, setIsFocused] = useState(false)
 
   const handleSearch = () => {
@@ -30,19 +31,18 @@ export function TopHeader({ onUploadClick, onSearch, showSearch = true, searchQu
       "fixed top-0 right-0 border-b border-border/40 z-40 bg-background/30 backdrop-blur-xl backdrop-saturate-150 transition-all duration-500 ease-in-out",
       isModalActive ? "left-0" : isSidebarCollapsed ? "left-16" : "left-64"
     )}>
-      <div className="relative flex items-center justify-center px-8 py-4">
+      <div className="relative flex items-center justify-between py-4">
         <div className="flex items-center justify-between w-full max-w-7xl mx-auto px-8">
-          {/* Left side - Logo */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="h-10 w-10 rounded-xl animated-gradient flex items-center justify-center shadow-glow">
-              <Sparkles className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-[#FF6B35] via-[#E0338E] to-[#00B4D8] bg-clip-text text-transparent">
-              Echo
-            </span>
+          {/* Page Title - Left */}
+          <div className="flex-shrink-0">
+            {pageTitle && (
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                {pageTitle}
+              </h1>
+            )}
           </div>
 
-          {/* Center - Search bar */}
+          {/* Search bar - Center */}
           {showSearch && (
             <div className="flex-1 max-w-2xl mx-8">
               <div
@@ -56,7 +56,6 @@ export function TopHeader({ onUploadClick, onSearch, showSearch = true, searchQu
                 <div className="relative flex items-center w-full bg-card rounded-2xl">
                   <div className="absolute left-4 flex items-center gap-2">
                     <Search className="h-4 w-4 text-muted-foreground transition-colors duration-200" />
-                    {isFocused && <Sparkles className="h-3 w-3 text-primary animate-pulse" />}
                   </div>
                   <Input
                     type="text"
@@ -82,16 +81,19 @@ export function TopHeader({ onUploadClick, onSearch, showSearch = true, searchQu
               </div>
             </div>
           )}
-          
-          {/* Right side - Upload button */}
+
+          {/* Upload Button - Right */}
           <div className="flex-shrink-0">
-            <Button
-              onClick={onUploadClick}
-              className="animated-gradient shadow-layered hover:shadow-glow transition-all duration-300 hover:scale-105"
-            >
-              Upload Photos
-              <Upload className="h-4 w-4 ml-2" />
-            </Button>
+            {onUploadClick && (
+              <Button
+                onClick={onUploadClick}
+                size="lg"
+                className="bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg hover:shadow-glow hover:scale-105 transition-all duration-300"
+              >
+                <Upload className="h-5 w-5 mr-2" />
+                Upload Photos
+              </Button>
+            )}
           </div>
         </div>
       </div>
