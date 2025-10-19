@@ -25,9 +25,9 @@ export function TopHeader({ onUploadClick, onSearch, showSearch = true, searchQu
 
   return (
     <header className="fixed top-0 left-64 right-0 border-b border-border/40 z-40 bg-background/30 backdrop-blur-xl backdrop-saturate-150">
-      <div className="flex items-center justify-between px-8 py-4 gap-4">
+      <div className="relative flex items-center justify-center px-8 py-4">
         {showSearch && (
-          <div className="flex-1 max-w-2xl">
+          <div className="w-full max-w-2xl">
             <div
               className={cn(
                 "relative flex items-center rounded-2xl transition-all duration-500",
@@ -67,7 +67,7 @@ export function TopHeader({ onUploadClick, onSearch, showSearch = true, searchQu
         )}
         <Button
           onClick={onUploadClick}
-          className="animated-gradient shadow-layered hover:shadow-glow transition-all duration-300 hover:scale-105"
+          className="absolute right-8 animated-gradient shadow-layered hover:shadow-glow transition-all duration-300 hover:scale-105"
         >
           Upload Photos
           <Upload className="h-4 w-4 ml-2" />
