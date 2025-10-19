@@ -243,6 +243,7 @@ export function PhotoBatch({ photos, searchQuery, isLoading = false, onClearSear
                 <img
                   src={photo.url || "/placeholder.svg"}
                   alt={photo.name}
+                  loading="lazy"
                   className={cn(
                     "h-full w-full object-cover transition-all duration-500",
                     selected ? "scale-95" : "group-hover:scale-110",
@@ -507,7 +508,7 @@ export function PhotoBatch({ photos, searchQuery, isLoading = false, onClearSear
                     key={photo.id}
                     className="aspect-square rounded-lg overflow-hidden border border-border/50 shadow-sm"
                   >
-                    <img src={photo.url || "/placeholder.svg"} alt={photo.name} className="w-full h-full object-cover" />
+                    <img src={photo.url || "/placeholder.svg"} alt={photo.name} loading="lazy" className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>

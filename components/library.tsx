@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useState } from "react"
+import { useState, useRef, useEffect, useMemo, useCallback } from "react"
 import { photoLibrary } from "@/lib/photo-data"
 import { PhotoCard } from "./photo-card"
 import type { Photo } from "@/lib/types"
@@ -37,8 +37,12 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
     new Set(photoLibrary.filter((p) => p.liked).map((p) => p.id)),
   )
   const [sortBy, setSortBy] = useState<SortOption>("date-desc")
+  const [displayCount, setDisplayCount] = useState(20)
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-  const toggleLike = (id: number) => {
+  const toggleLike = useCallback((id: number) => {
     setLikedPhotos((prev) => {
       const newSet = new Set(prev)
       if (newSet.has(id)) {
@@ -48,7 +52,7 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
       }
       return newSet
     })
-  }
+  }, [])
 
   // Loading state - show AI processing animation
   if (isLoading) {
@@ -108,29 +112,74 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
   }
 
   const photosToDisplay = isSearchMode && searchResults ? searchResults : photoLibrary
-  
-  const sortedPhotos = [...photosToDisplay].sort((a, b) => {
-    switch (sortBy) {
-      case "date-desc":
-        return new Date(b.date).getTime() - new Date(a.date).getTime()
-      case "date-asc":
-        return new Date(a.date).getTime() - new Date(b.date).getTime()
-      case "name-asc":
-        return a.name.localeCompare(b.name)
-      case "name-desc":
-        return b.name.localeCompare(a.name)
-      case "location":
-        return a.location.localeCompare(b.location)
-      case "liked":
-        const aLiked = likedPhotos.has(a.id) ? 1 : 0
-        const bLiked = likedPhotos.has(b.id) ? 1 : 0
-        return bLiked - aLiked
-      default:
-        return 0
-    }
-  })
+
+  const sortedPhotos = useMemo(() => {
+    return [...photosToDisplay].sort((a, b) => {
+      switch (sortBy) {
+        case "date-desc":
+          return new Date(b.date).getTime() - new Date(a.date).getTime()
+        case "date-asc":
+          return new Date(a.date).getTime() - new Date(b.date).getTime()
+        case "name-asc":
+          return a.name.localeCompare(b.name)
+        case "name-desc":
+          return b.name.localeCompare(a.name)
+        case "location":
+          return a.location.localeCompare(b.location)
+        case "liked":
+          const aLiked = likedPhotos.has(a.id) ? 1 : 0
+          const bLiked = likedPhotos.has(b.id) ? 1 : 0
+          return bLiked - aLiked
+        default:
+          return 0
+      }
+    })
+  }, [photosToDisplay, sortBy, likedPhotos])
 
   const currentSortLabel = sortOptions.find((opt) => opt.value === sortBy)?.label || "Date (Newest First)"
+
+  // Set up Intersection Observer for infinite scrolling with debouncing
+  useEffect(() => {
+    const loadMoreElement = loadMoreRef.current
+    if (!loadMoreElement) return
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0]
+        if (first.isIntersecting && displayCount < sortedPhotos.length) {
+          // Debounce the loading to prevent excessive updates during fast scrolling
+          if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current)
+          }
+          debounceTimerRef.current = setTimeout(() => {
+            setDisplayCount((prev) => Math.min(prev + 20, sortedPhotos.length))
+          }, 100)
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    )
+
+    observerRef.current.observe(loadMoreElement)
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
+  }, [displayCount, sortedPhotos.length])
+
+  // Reset display count when sorting changes
+  useEffect(() => {
+    setDisplayCount(20)
+  }, [sortBy])
+
+  const displayedPhotos = useMemo(() =>
+    sortedPhotos.slice(0, displayCount),
+    [sortedPhotos, displayCount]
+  )
 
   return (
     <div className="min-h-screen bg-background">
@@ -170,10 +219,17 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {sortedPhotos.map((photo) => (
+          {displayedPhotos.map((photo) => (
             <PhotoCard key={photo.id} photo={photo} isLiked={likedPhotos.has(photo.id)} onToggleLike={toggleLike} onPhotoClick={onPhotoClick} />
           ))}
         </div>
+
+        {/* Load more trigger */}
+        {displayCount < sortedPhotos.length && (
+          <div ref={loadMoreRef} className="h-20 flex items-center justify-center mt-8">
+            <div className="animate-pulse text-muted-foreground">Loading more photos...</div>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -9,14 +9,17 @@ import { Library } from "@/components/library"
 import { UploadModal } from "@/components/upload-modal"
 import { RecentPhotos } from "@/components/recent-photos"
 import { PhotoDetail } from "@/components/photo-detail"
+import { AlbumDetail } from "@/components/album-detail"
+import { Explore } from "@/components/explore"
+import { ExplorePreview } from "@/components/explore-preview"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Share2, Sparkles } from "lucide-react"
-import { photoLibrary, addSharedAlbum, addAlbum } from "@/lib/photo-data"
+import { photoLibrary, addSharedAlbum, addAlbum, albums } from "@/lib/photo-data"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
-import type { Photo } from "@/lib/types"
+import type { Photo, Album, PublicAlbum } from "@/lib/types"
 
 export default function HomePage() {
   const [activeView, setActiveView] = useState("home")
@@ -33,6 +36,8 @@ export default function HomePage() {
   const [albumsUpdated, setAlbumsUpdated] = useState(0) // Trigger re-render when albums change
   const [showAlbumSuccess, setShowAlbumSuccess] = useState(false)
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
+  const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null)
+  const [selectedPublicAlbum, setSelectedPublicAlbum] = useState<PublicAlbum | null>(null)
 
   const handleSearchQueryChange = (query: string) => {
     setSearchQuery(query)
@@ -148,6 +153,23 @@ export default function HomePage() {
     setSelectedPhoto(null)
   }
 
+  const handleAlbumClick = (albumId: number) => {
+    const album = albums.find(a => a.id === albumId)
+    if (album) {
+      setSelectedAlbum(album)
+    }
+  }
+
+  const handleCloseAlbumDetail = () => {
+    setSelectedAlbum(null)
+  }
+
+  const handlePublicAlbumClick = (album: PublicAlbum) => {
+    setSelectedPublicAlbum(album)
+    // For now, just log it - could navigate to a detail view later
+    console.log("Public album clicked:", album)
+  }
+
   return (
     <div className="flex min-h-screen bg-background relative overflow-hidden">
       {/* Vibrant animated background mesh gradients */}
@@ -188,8 +210,14 @@ export default function HomePage() {
                       Create Shared Album
                     </Button>
                   </div>
-                  <AlbumsList key={albumsUpdated} onAlbumClick={(id) => console.log("Album clicked:", id)} isPinterestStyle={true} />
+                  <AlbumsList key={albumsUpdated} onAlbumClick={handleAlbumClick} isPinterestStyle={true} />
                 </div>
+
+                {/* Explore Preview Section */}
+                <ExplorePreview
+                  onViewAll={() => handleNavigate("explore")}
+                  onAlbumClick={handlePublicAlbumClick}
+                />
               </div>
             )}
 
@@ -212,9 +240,11 @@ export default function HomePage() {
           </div>
         )}
 
-        {activeView === "albums" && <AlbumsList key={albumsUpdated} onAlbumClick={(id) => console.log("Album clicked:", id)} />}
+        {activeView === "albums" && <AlbumsList key={albumsUpdated} onAlbumClick={handleAlbumClick} />}
 
         {activeView === "shared" && <SharedAlbums onAlbumClick={(id) => console.log("Shared album clicked:", id)} onCreateSharedAlbum={() => setIsCreateSharedAlbumOpen(true)} />}
+
+        {activeView === "explore" && <Explore onAlbumClick={handlePublicAlbumClick} />}
 
         {activeView === "library" && (
           <Library 
@@ -351,6 +381,20 @@ export default function HomePage() {
       {/* Photo Detail Modal */}
       {selectedPhoto && (
         <PhotoDetail photo={selectedPhoto} onClose={handleClosePhotoDetail} />
+      )}
+
+      {/* Album Detail Modal */}
+      {selectedAlbum && (
+        <AlbumDetail
+          album={selectedAlbum}
+          onClose={handleCloseAlbumDetail}
+          onPhotoClick={(photoId) => {
+            const photo = photoLibrary.find(p => p.id === photoId)
+            if (photo) {
+              setSelectedPhoto(photo)
+            }
+          }}
+        />
       )}
     </div>
   )
