@@ -23,7 +23,7 @@ export function RecentPhotos({ onViewAll }: RecentPhotosProps) {
   return (
     <section className="max-w-7xl mx-auto px-8 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
           Recent Photos
         </h2>
         <button
