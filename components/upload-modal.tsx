@@ -3,7 +3,7 @@
 import { Upload, ImageIcon, Cloud, HardDrive, Box, Folder, Image } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { cn } from "@/lib/utils"
 
 interface UploadModalProps {
@@ -26,6 +26,7 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
   const [activeTab, setActiveTab] = useState<TabType>("upload")
   const [connectedServices, setConnectedServices] = useState<Set<string>>(new Set())
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set())
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const cloudServices: CloudService[] = [
     {
@@ -119,6 +120,39 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
     setSelectedPhotos(new Set())
   }
 
+  const handleFileSelect = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (files && files.length > 0) {
+      console.log("Selected files:", Array.from(files))
+      // TODO: Process selected files
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    
+    const files = e.dataTransfer.files
+    if (files && files.length > 0) {
+      console.log("Dropped files:", Array.from(files))
+      // TODO: Process dropped files
+    }
+  }
+
   return (
     <>
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -142,7 +176,7 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
             <button
               onClick={() => setActiveTab("upload")}
               className={cn(
-                "flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                "flex-1 px-4 py-2.5 rounded-lg text-sm font-medium",
                 activeTab === "upload"
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -154,7 +188,7 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
             <button
               onClick={() => setActiveTab("cloud")}
               className={cn(
-                "flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                "flex-1 px-4 py-2.5 rounded-lg text-sm font-medium",
                 activeTab === "cloud"
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -170,7 +204,7 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
         {activeTab === "google-photos" && (
           <button
             onClick={() => setActiveTab("cloud")}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             ← Back to Cloud Import
           </button>
@@ -181,22 +215,18 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
           <>
             <div
               onDragEnter={() => setIsDragging(true)}
-              onDragLeave={() => setIsDragging(false)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault()
-                setIsDragging(false)
-                // Handle file drop
-              }}
+              onDragLeave={handleDragLeave}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
               className={cn(
-                "relative border-2 border-dashed rounded-xl p-12 text-center transition-all duration-200",
-                isDragging ? "border-primary bg-primary/5 scale-[1.02]" : "border-border bg-muted/30",
+                "relative border-2 border-dashed rounded-xl p-12 text-center",
+                isDragging ? "border-primary bg-primary/5" : "border-border bg-muted/30",
               )}
             >
               <div className="flex flex-col items-center gap-4">
                 <div
                   className={cn(
-                    "h-16 w-16 rounded-full flex items-center justify-center transition-colors duration-200",
+                    "h-16 w-16 rounded-full flex items-center justify-center",
                     isDragging ? "bg-primary/20" : "bg-muted",
                   )}
                 >
@@ -210,12 +240,26 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
                   <p className="text-sm text-muted-foreground">or click to browse</p>
                 </div>
 
-                <Button size="lg" className="bg-gradient-to-r from-primary to-accent text-primary-foreground">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-primary to-accent text-primary-foreground active:scale-95 active:brightness-110"
+                  onClick={handleFileSelect}
+                >
                   <ImageIcon className="h-5 w-5 mr-2" />
                   Choose Files
                 </Button>
               </div>
             </div>
+
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/jpeg,image/jpg,image/png,image/heic,image/heif"
+              onChange={handleFileChange}
+              className="hidden"
+            />
 
             <p className="text-xs text-muted-foreground text-center">
               Supported formats: JPG, PNG, HEIC. Max file size: 50MB
@@ -231,10 +275,10 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
                     <div
                       key={service.id}
                       className={cn(
-                        "flex items-center gap-3 p-3 rounded-lg border-2 transition-all duration-200",
+                        "flex items-center gap-3 p-3 rounded-lg border-2",
                         isConnected
                           ? "border-green-500 bg-green-50/50"
-                          : "border-border bg-muted/30 hover:border-primary hover:bg-primary/5 hover:scale-[1.01]"
+                          : "border-border bg-muted/30 hover:border-primary hover:bg-primary/5"
                       )}
                     >
                       <div
@@ -258,7 +302,7 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
                           <Button
                             size="sm"
                             onClick={() => setActiveTab("google-photos")}
-                            className="bg-green-600 hover:bg-green-700 text-white"
+                            className="bg-green-600 hover:bg-green-700 text-white active:scale-95 active:brightness-110"
                           >
                             View
                           </Button>
@@ -268,7 +312,7 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
                           <Button
                             size="sm"
                             onClick={() => handleServiceConnect(service.id)}
-                            className="bg-gradient-to-r from-primary to-accent text-primary-foreground"
+                            className="bg-gradient-to-r from-primary to-accent text-primary-foreground active:scale-95 active:brightness-110"
                           >
                             Connect
                           </Button>
@@ -296,10 +340,10 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
                       key={photo}
                       onClick={() => togglePhotoSelection(photo)}
                       className={cn(
-                        "relative aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200",
+                        "relative aspect-square rounded-xl overflow-hidden border-2",
                         isSelected
-                          ? "border-primary ring-2 ring-primary ring-offset-2 scale-95"
-                          : "border-border hover:border-primary/50 hover:scale-105"
+                          ? "border-primary ring-2 ring-primary ring-offset-2"
+                          : "border-border hover:border-primary/50"
                       )}
                     >
                       <img src={photo} alt="Google Photo" className="w-full h-full object-cover" />
@@ -321,13 +365,13 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
                 {selectedPhotos.size} photo{selectedPhotos.size !== 1 ? "s" : ""} selected
               </p>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setActiveTab("cloud")}>
+                <Button variant="outline" onClick={() => setActiveTab("cloud")} className="active:scale-95 active:brightness-110">
                   Cancel
                 </Button>
                 <Button
                   onClick={handleAddToLibrary}
                   disabled={selectedPhotos.size === 0}
-                  className="bg-gradient-to-r from-primary to-accent text-primary-foreground"
+                  className="bg-gradient-to-r from-primary to-accent text-primary-foreground active:scale-95 active:brightness-110"
                 >
                   Add to Library ({selectedPhotos.size})
                 </Button>
