@@ -44,13 +44,17 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
     const initialPhotos = shuffleArrayWithSeed(photoLibrary, seed).slice(0, 12)
     setDisplayedPhotos(initialPhotos)
 
+    // Clear any existing animations to ensure fresh start
+    setAnimatedPhotos(new Set())
+    setFadingPhotos(new Set())
+
     // Create pool of available indices (excluding initial 12)
     const usedIds = new Set(initialPhotos.map(p => p.id))
     const available = photoLibrary
       .map((_, index) => index)
       .filter(index => !usedIds.has(photoLibrary[index].id))
     setAvailablePhotoIndices(available)
-  }, [])
+  }, [refreshTrigger])
 
   // Fetch fresh data from API in background
   useEffect(() => {
@@ -84,8 +88,7 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
     displayedPhotos.forEach((photo, index) => {
       setTimeout(() => {
         setAnimatedPhotos((prev) => new Set(prev).add(photo.id))
-        console.log(`Animating photo ${photo.id} at index ${index}`)
-      }, index * 30) // Reduced from 100ms to 30ms - 390ms total
+      }, index * 50 + 100) // 50ms stagger + 100ms initial delay
     })
   }, [displayedPhotos.length])
 
@@ -141,17 +144,14 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
       }
 
       // Start fade out animation (slower)
-      console.log(`Fading out photo ${photoToReplace.id}`)
       setFadingPhotos((prev) => {
         const newSet = new Set(prev)
         newSet.add(photoToReplace.id)
-        console.log(`Fading photos set:`, Array.from(newSet))
         return newSet
       })
       setAnimatedPhotos((prev) => {
         const newSet = new Set(prev)
         newSet.delete(photoToReplace.id)
-        console.log(`Animated photos set:`, Array.from(newSet))
         return newSet
       })
 
@@ -166,17 +166,14 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
         setFadingPhotos((prev) => {
           const newSet = new Set(prev)
           newSet.delete(photoToReplace.id)
-          console.log(`Cleared fading photos set:`, Array.from(newSet))
           return newSet
         })
 
         // Fade in new photo (slower, more gradual)
         setTimeout(() => {
-          console.log(`Fading in photo ${newPhoto.id}`)
           setAnimatedPhotos((prev) => {
             const newSet = new Set(prev)
             newSet.add(newPhoto.id)
-            console.log(`Added to animated photos set:`, Array.from(newSet))
             return newSet
           })
         }, 200)
@@ -212,11 +209,6 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
         {displayedPhotos.map((photo, index) => {
           const isAnimated = animatedPhotos.has(photo.id)
           const isFading = fadingPhotos.has(photo.id)
-          
-          // Debug logging
-          if (index === 0) {
-            console.log(`Photo ${photo.id}: isAnimated=${isAnimated}, isFading=${isFading}`)
-          }
 
           // Responsive layout: scales from 6 cols (mobile) -> 8 cols (tablet) -> 12 cols (desktop)
           // Photos maintain proportional sizes across breakpoints
@@ -246,8 +238,7 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
               onClick={() => onPhotoClick?.(photo)}
               className={cn(
                 "group relative overflow-hidden rounded-3xl bg-muted cursor-pointer transition-all duration-500 ease-in-out",
-                `col-span-${colSpan} row-span-${rowSpan}`,
-                isAnimated && !isFading ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-4 scale-95"
+                `col-span-${colSpan} row-span-${rowSpan}`
               )}
               style={{
                 boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.12)",
