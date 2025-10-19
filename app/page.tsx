@@ -118,7 +118,15 @@ export default function HomePage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background relative overflow-hidden">
+      {/* Vibrant animated background mesh gradients */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-[#FF6B35]/20 to-[#F7931E]/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/3 right-1/4 w-[32rem] h-[32rem] bg-gradient-to-br from-[#00B4D8]/15 to-[#4A90E2]/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+        <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-gradient-to-br from-[#9D4EDD]/20 to-[#E0338E]/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
+        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-gradient-to-br from-[#F7931E]/15 to-[#FF6B35]/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "3s" }} />
+      </div>
+
       <Sidebar activeView={activeView} onNavigate={handleNavigate} />
       {(activeView === "home" || activeView === "search-results" || activeView === "library") && (
         <TopHeader
@@ -128,7 +136,7 @@ export default function HomePage() {
         />
       )}
 
-      <main className={`flex-1 ml-64 ${activeView === "home" || activeView === "search-results" || activeView === "library" ? "pt-20" : ""}`}>
+      <main className={`flex-1 ml-64 relative z-10 ${activeView === "home" || activeView === "search-results" || activeView === "library" ? "pt-20" : ""}`}>
         {activeView === "home" && (
           <div className="relative">
             {/* Home Content - Only visible when NOT in search mode */}
@@ -137,11 +145,11 @@ export default function HomePage() {
                 <RecentPhotos onViewAll={() => handleNavigate("library")} />
                 <div className="max-w-7xl mx-auto px-8 py-12">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-semibold text-foreground">Albums</h2>
+                    <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Albums</h2>
                     <Button
                       onClick={() => setIsCreateSharedAlbumOpen(true)}
                       variant="outline"
-                      className="border-primary/30 text-primary hover:bg-primary/10 hover:border-primary transition-all duration-300"
+                      className="border-2 border-primary/40 text-primary hover:text-primary hover:bg-gradient-to-r hover:from-[#FF6B35]/20 hover:via-[#E0338E]/20 hover:to-[#9D4EDD]/20 hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105 font-semibold"
                     >
                       <Share2 className="h-4 w-4 mr-2" />
                       Create Shared Album
@@ -184,8 +192,8 @@ export default function HomePage() {
         <DialogContent className="sm:max-w-2xl glass-effect border-border/50">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-2xl">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                <Share2 className="h-6 w-6 text-primary" />
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-[#FF6B35] via-[#E0338E] to-[#9D4EDD] flex items-center justify-center shadow-glow">
+                <Share2 className="h-7 w-7 text-white" />
               </div>
               Create Shared Album
             </DialogTitle>
@@ -268,8 +276,8 @@ export default function HomePage() {
               onClick={handleCreateSharedAlbum}
               disabled={!sharedAlbumTitle.trim() || isCreatingSharedAlbum}
               className={cn(
-                "bg-gradient-to-r from-primary to-accent text-primary-foreground transition-all duration-300",
-                !sharedAlbumTitle.trim() || isCreatingSharedAlbum ? "opacity-50" : "hover:shadow-glow hover:scale-105",
+                "animated-gradient text-primary-foreground transition-all duration-300 font-semibold",
+                !sharedAlbumTitle.trim() || isCreatingSharedAlbum ? "opacity-50" : "hover:shadow-glow hover:scale-105 pulse-glow",
               )}
             >
               {isCreatingSharedAlbum ? (

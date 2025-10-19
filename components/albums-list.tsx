@@ -36,7 +36,7 @@ export function AlbumsList({ onAlbumClick, isPinterestStyle = false }: AlbumsLis
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">My Albums</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">My Albums</h1>
           </div>
           <Button size="lg" className="bg-gradient-to-r from-primary to-accent text-primary-foreground">
             <Plus className="h-5 w-5 mr-2" />

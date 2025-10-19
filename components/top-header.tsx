@@ -23,7 +23,7 @@ export function TopHeader({ onUploadClick, onSearch, showSearch = true }: TopHea
   }
 
   return (
-    <header className="fixed top-0 left-64 right-0 border-b border-border/50 glass-effect z-40 bg-background/95 backdrop-blur-sm">
+    <header className="fixed top-0 left-64 right-0 border-b border-border/40 z-40 bg-background/30 backdrop-blur-xl backdrop-saturate-150">
       <div className="flex items-center justify-between px-8 py-4 gap-4">
         {showSearch && (
           <div className="flex-1 max-w-2xl">
