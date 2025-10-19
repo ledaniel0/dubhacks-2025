@@ -16,8 +16,9 @@ interface PhotoBatchProps {
   refineQuery?: string
   isLoading?: boolean
   onClearSearch: () => void
-  onAlbumCreated?: (title: string, description: string, photoIds: number[]) => void
+  onAlbumCreated?: (title: string, description: string, photoIds: number[]) => number
   onPhotoClick?: (photo: Photo) => void
+  onNavigateToAlbum?: (albumId: number) => void
   sharedAlbumContext?: {
     albumId: number
     albumTitle: string
@@ -25,7 +26,7 @@ interface PhotoBatchProps {
   }
 }
 
-export function PhotoBatch({ photos, searchQuery, refineQuery = "", isLoading = false, onClearSearch, onAlbumCreated, onPhotoClick, sharedAlbumContext }: PhotoBatchProps) {
+export function PhotoBatch({ photos, searchQuery, refineQuery = "", isLoading = false, onClearSearch, onAlbumCreated, onPhotoClick, onNavigateToAlbum, sharedAlbumContext }: PhotoBatchProps) {
   const [animatedPhotos, setAnimatedPhotos] = useState<Set<number>>(new Set())
   const [hoveredPhoto, setHoveredPhoto] = useState<number | null>(null)
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null)
@@ -136,8 +137,10 @@ export function PhotoBatch({ photos, searchQuery, refineQuery = "", isLoading = 
     setIsCreating(true)
     await new Promise((resolve) => setTimeout(resolve, 800))
 
+    // Create the album and get the ID
+    let albumId: number | undefined
     if (onAlbumCreated) {
-      onAlbumCreated(albumTitle.trim(), albumDescription.trim(), selectedPhotoIds)
+      albumId = onAlbumCreated(albumTitle.trim(), albumDescription.trim(), selectedPhotoIds)
     }
 
     setIsCreating(false)
@@ -146,6 +149,11 @@ export function PhotoBatch({ photos, searchQuery, refineQuery = "", isLoading = 
     setAlbumDescription("")
     setSelectedPhotoIds([])
     onClearSearch()
+
+    // Navigate to the album page if handler is provided
+    if (onNavigateToAlbum && albumId !== undefined) {
+      onNavigateToAlbum(albumId)
+    }
   }
 
   const handleCloseDialog = () => {
@@ -656,6 +664,11 @@ export function PhotoBatch({ photos, searchQuery, refineQuery = "", isLoading = 
           // Clear selection and close search
           setSelectedPhotoIds([])
           onClearSearch()
+
+          // Navigate to the album page
+          if (onNavigateToAlbum) {
+            onNavigateToAlbum(albumId)
+          }
         }}
       />
     </>

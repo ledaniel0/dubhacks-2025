@@ -416,7 +416,37 @@ export const basePhotoLibrary: Photo[] = [
     tags: ["salesforce", "internship", "milestone", "professional", "proudest"],
     liked: true,
   }),
-  
+  createPhoto({
+    id: 93,
+    name: "Salesforce Team Moment",
+    url: "/images/salesforce/IMG_4627.PNG",
+    description: "Team collaboration at Salesforce",
+    date: "Summer 2025",
+    location: "Salesforce Office, Seattle",
+    tags: ["salesforce", "internship", "team", "professional", "work"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 94,
+    name: "Salesforce Innovation",
+    url: "/images/salesforce/IMG_7478.PNG",
+    description: "Innovation and creativity at Salesforce",
+    date: "Summer 2025",
+    location: "Salesforce Office, Seattle",
+    tags: ["salesforce", "internship", "innovation", "professional", "tech"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 95,
+    name: "Salesforce Culture",
+    url: "/images/salesforce/IMG_7736.PNG",
+    description: "Experiencing Salesforce company culture",
+    date: "Summer 2025",
+    location: "Salesforce Office, Seattle",
+    tags: ["salesforce", "internship", "culture", "professional", "team"],
+    liked: true,
+  }),
+
   // New York Photos
   createPhoto({
     id: 31,
@@ -1188,7 +1218,7 @@ export const albums: Album[] = [
     id: 2,
     title: "Salesforce Internship",
     description: "Summer 2025 internship memories",
-    photoIds: [28, 29, 30],
+    photoIds: [28, 29, 30, 93, 94, 95],
     coverPhotoId: 29,
   }),
   createAlbum({

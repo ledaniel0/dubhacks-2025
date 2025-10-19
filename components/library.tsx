@@ -72,63 +72,7 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
     })
   }, [])
 
-  // Loading state - show AI processing animation
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-8 py-8">
-          <div className="flex flex-col items-center justify-center py-32">
-            {/* Circular Progress Indicator */}
-            <div className="relative w-12 h-12 mb-4">
-              <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
-                {/* Background circle */}
-                <circle
-                  cx="24"
-                  cy="24"
-                  r="20"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  fill="none"
-                  className="text-muted/20"
-                />
-                {/* Progress arc with fill animation */}
-                <circle
-                  cx="24"
-                  cy="24"
-                  r="20"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  fill="none"
-                  strokeLinecap="round"
-                  className="text-primary"
-                  style={{
-                    strokeDasharray: "126",
-                    strokeDashoffset: "126",
-                    animation: "fillProgress 0.8s ease-out forwards",
-                  }}
-                />
-              </svg>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Searching for &quot;{searchQuery}&quot;
-            </p>
-            
-            <style jsx>{`
-              @keyframes fillProgress {
-                0% {
-                  stroke-dashoffset: 126;
-                }
-                100% {
-                  stroke-dashoffset: 20;
-                }
-              }
-            `}</style>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
+  // Calculate photos to display (must be before early return to maintain hook order)
   const photosToDisplay = isSearchMode && searchResults ? searchResults : photoLibrary
 
   const sortedPhotos = useMemo(() => {
@@ -199,6 +143,63 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
     [sortedPhotos, displayCount]
   )
 
+  // Loading state - show AI processing animation (after all hooks)
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto px-8 py-8">
+          <div className="flex flex-col items-center justify-center py-32">
+            {/* Circular Progress Indicator */}
+            <div className="relative w-12 h-12 mb-4">
+              <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
+                {/* Background circle */}
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="20"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  fill="none"
+                  className="text-muted/20"
+                />
+                {/* Progress arc with fill animation */}
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="20"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  fill="none"
+                  strokeLinecap="round"
+                  className="text-primary"
+                  style={{
+                    strokeDasharray: "126",
+                    strokeDashoffset: "126",
+                    animation: "fillProgress 0.8s ease-out forwards",
+                  }}
+                />
+              </svg>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Searching for &quot;{searchQuery}&quot;
+            </p>
+
+            <style jsx>{`
+              @keyframes fillProgress {
+                0% {
+                  stroke-dashoffset: 126;
+                }
+                100% {
+                  stroke-dashoffset: 20;
+                }
+              }
+            `}</style>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-8 py-8">
@@ -206,7 +207,7 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">Library</h1>
             <p className="text-muted-foreground">
-              {isSearchMode 
+              {isSearchMode
                 ? `${searchResults?.length || 0} photos found for "${searchQuery}"`
                 : `${photoLibrary.length} photos in your collection`
               }

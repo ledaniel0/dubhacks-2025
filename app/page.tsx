@@ -107,17 +107,20 @@ export default function HomePage() {
     setRefineQuery("")
   }
 
-  const handleAlbumCreated = (title: string, description: string, photoIds: number[]) => {
+  const handleAlbumCreated = (title: string, description: string, photoIds: number[]): number => {
     // Create and save the album
     const newAlbum = addAlbum(title, description, photoIds)
     console.log("Created album:", newAlbum)
-    
+
     // Trigger re-render of albums list
     setAlbumsUpdated(prev => prev + 1)
-    
+
     // Show success notification
     setShowAlbumSuccess(true)
     setTimeout(() => setShowAlbumSuccess(false), 3000) // Hide after 3 seconds
+
+    // Return the album ID so PhotoBatch can navigate to it
+    return newAlbum.id
   }
 
   const handleCreateSharedAlbum = async () => {
@@ -291,6 +294,7 @@ export default function HomePage() {
                     onClearSearch={handleClearSearch}
                     onAlbumCreated={handleAlbumCreated}
                     onPhotoClick={handlePhotoClick}
+                    onNavigateToAlbum={handleAlbumClick}
                     sharedAlbumContext={createdSharedAlbum ? {
                       albumId: createdSharedAlbum.id,
                       albumTitle: createdSharedAlbum.name,
@@ -310,14 +314,29 @@ export default function HomePage() {
         {activeView === "explore" && <Explore onAlbumClick={handlePublicAlbumClick} onModalStateChange={setIsModalActive} />}
 
         {activeView === "library" && (
-          <Library
-            searchResults={isSearchMode ? searchResults : undefined}
-            isSearchMode={isSearchMode}
-            searchQuery={searchQuery}
-            isLoading={isSearching}
-            onPhotoClick={handlePhotoClick}
-            refreshTrigger={refreshTrigger}
-          />
+          <>
+            {isSearchMode ? (
+              <PhotoBatch
+                photos={searchResults}
+                searchQuery={initialSearchQuery || searchQuery}
+                refineQuery={refineQuery}
+                isLoading={isSearching}
+                onClearSearch={handleClearSearch}
+                onAlbumCreated={handleAlbumCreated}
+                onPhotoClick={handlePhotoClick}
+                onNavigateToAlbum={handleAlbumClick}
+              />
+            ) : (
+              <Library
+                searchResults={undefined}
+                isSearchMode={false}
+                searchQuery=""
+                isLoading={false}
+                onPhotoClick={handlePhotoClick}
+                refreshTrigger={refreshTrigger}
+              />
+            )}
+          </>
         )}
       </main>
 
