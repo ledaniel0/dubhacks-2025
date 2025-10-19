@@ -50,7 +50,7 @@ export default function HomePage() {
       
       setSearchResults(results)
       setIsSearching(false)
-    }, 1500) // 1.5 second delay to simulate AI processing
+    }, 800) // 0.8 second delay to simulate AI processing
   }
 
   const handleClearSearch = () => {
@@ -74,8 +74,12 @@ export default function HomePage() {
     setIsCreatingSharedAlbum(true)
     await new Promise((resolve) => setTimeout(resolve, 800))
 
+    // Store the title before clearing it
+    const albumTitle = sharedAlbumTitle.trim()
+    const albumDescription = sharedAlbumDescription.trim()
+
     // Create the shared album
-    const newSharedAlbum = addSharedAlbum(sharedAlbumTitle.trim(), sharedAlbumDescription.trim(), [])
+    const newSharedAlbum = addSharedAlbum(albumTitle, albumDescription, [])
     setCreatedSharedAlbum(newSharedAlbum)
     
     console.log("Created shared album:", newSharedAlbum)
@@ -83,8 +87,13 @@ export default function HomePage() {
     setIsCreatingSharedAlbum(false)
     setIsCreateSharedAlbumOpen(false)
     
+    // Clear form fields after successful creation
+    setSharedAlbumTitle("")
+    setSharedAlbumDescription("")
+    setCreatedSharedAlbum(null)
+    
     // Navigate to photo selection mode and trigger search
-    handleSearch(sharedAlbumTitle.trim())
+    handleSearch(albumTitle)
   }
 
   const handleCloseSharedAlbumDialog = () => {
@@ -111,8 +120,8 @@ export default function HomePage() {
 
   const handleNavigate = (view: string) => {
     setActiveView(view)
-    // Clear search mode when navigating away from home
-    if (view !== "home") {
+    // Clear search mode when navigating away from home and library (pages that support search)
+    if (view !== "home" && view !== "library") {
       handleClearSearch()
     }
   }
@@ -133,6 +142,7 @@ export default function HomePage() {
           onUploadClick={() => setIsUploadModalOpen(true)}
           onSearch={handleSearch}
           showSearch={activeView === "home" || activeView === "search-results" || activeView === "library"}
+          searchQuery={searchQuery}
         />
       )}
 
@@ -180,9 +190,16 @@ export default function HomePage() {
 
         {activeView === "albums" && <AlbumsList onAlbumClick={(id) => console.log("Album clicked:", id)} />}
 
-        {activeView === "shared" && <SharedAlbums onAlbumClick={(id) => console.log("Shared album clicked:", id)} />}
+        {activeView === "shared" && <SharedAlbums onAlbumClick={(id) => console.log("Shared album clicked:", id)} onCreateSharedAlbum={() => setIsCreateSharedAlbumOpen(true)} />}
 
-        {activeView === "library" && <Library />}
+        {activeView === "library" && (
+          <Library 
+            searchResults={isSearchMode ? searchResults : undefined}
+            isSearchMode={isSearchMode}
+            searchQuery={searchQuery}
+            isLoading={isSearching}
+          />
+        )}
       </main>
 
       <UploadModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} />

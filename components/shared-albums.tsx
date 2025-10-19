@@ -7,9 +7,10 @@ import { SharedAlbumCard } from "./shared-album-card"
 
 interface SharedAlbumsProps {
   onAlbumClick: (id: number) => void
+  onCreateSharedAlbum?: () => void
 }
 
-export function SharedAlbums({ onAlbumClick }: SharedAlbumsProps) {
+export function SharedAlbums({ onAlbumClick, onCreateSharedAlbum }: SharedAlbumsProps) {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-8 py-8">
@@ -17,7 +18,10 @@ export function SharedAlbums({ onAlbumClick }: SharedAlbumsProps) {
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Shared Albums</h1>
           </div>
-          <Button className="bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 transition-opacity duration-200">
+          <Button 
+            onClick={onCreateSharedAlbum}
+            className="bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 transition-opacity duration-200"
+          >
             <Users className="h-4 w-4 mr-2" />
             Share New Album
           </Button>

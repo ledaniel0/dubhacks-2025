@@ -159,11 +159,11 @@ export function PhotoBatch({ photos, searchQuery, isLoading = false, onClearSear
                 fill="none"
                 strokeLinecap="round"
                 className="text-primary"
-                style={{
-                  strokeDasharray: "126",
-                  strokeDashoffset: "126",
-                  animation: "fillProgress 1.5s ease-out forwards",
-                }}
+                  style={{
+                    strokeDasharray: "126",
+                    strokeDashoffset: "126",
+                    animation: "fillProgress 0.8s ease-out forwards",
+                  }}
               />
             </svg>
           </div>
