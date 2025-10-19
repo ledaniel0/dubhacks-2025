@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "AI Photo Search",
+  title: "Echo",
   description: "Find your most meaningful memories with AI-powered search",
   generator: "v0.app",
 }
