@@ -33,6 +33,8 @@ export default function HomePage() {
   const [albumsUpdated, setAlbumsUpdated] = useState(0) // Trigger re-render when albums change
   const [showAlbumSuccess, setShowAlbumSuccess] = useState(false)
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
+  const [likedPhotos, setLikedPhotos] = useState<Set<number>>(new Set())
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleSearchQueryChange = (query: string) => {
     setSearchQuery(query)
@@ -148,6 +150,18 @@ export default function HomePage() {
     setSelectedPhoto(null)
   }
 
+  const toggleLike = (id: number) => {
+    setLikedPhotos((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
+  }
+
   return (
     <div className="flex min-h-screen bg-background relative overflow-hidden">
       {/* Vibrant animated background mesh gradients */}
@@ -175,7 +189,7 @@ export default function HomePage() {
             {/* Home Content - Only visible when NOT in search mode */}
             {!isSearchMode && (
               <div className="transition-all duration-500">
-                <RecentPhotos onViewAll={() => handleNavigate("library")} onPhotoClick={handlePhotoClick} />
+                <RecentPhotos onViewAll={() => handleNavigate("library")} onPhotoClick={handlePhotoClick} refreshTrigger={refreshTrigger} />
                 <div className="max-w-7xl mx-auto px-8 py-12">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Albums</h2>
@@ -217,17 +231,22 @@ export default function HomePage() {
         {activeView === "shared" && <SharedAlbums onAlbumClick={(id) => console.log("Shared album clicked:", id)} onCreateSharedAlbum={() => setIsCreateSharedAlbumOpen(true)} />}
 
         {activeView === "library" && (
-          <Library 
+          <Library
             searchResults={isSearchMode ? searchResults : undefined}
             isSearchMode={isSearchMode}
             searchQuery={searchQuery}
             isLoading={isSearching}
             onPhotoClick={handlePhotoClick}
+            refreshTrigger={refreshTrigger}
           />
         )}
       </main>
 
-      <UploadModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} />
+      <UploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onPhotoUploaded={() => setRefreshTrigger(prev => prev + 1)}
+      />
 
       {/* Create Shared Album Dialog */}
       <Dialog open={isCreateSharedAlbumOpen} onOpenChange={handleCloseSharedAlbumDialog}>
@@ -350,7 +369,12 @@ export default function HomePage() {
 
       {/* Photo Detail Modal */}
       {selectedPhoto && (
-        <PhotoDetail photo={selectedPhoto} onClose={handleClosePhotoDetail} />
+        <PhotoDetail
+          photo={selectedPhoto}
+          onClose={handleClosePhotoDetail}
+          isLiked={likedPhotos.has(selectedPhoto.id)}
+          onToggleLike={toggleLike}
+        />
       )}
     </div>
   )

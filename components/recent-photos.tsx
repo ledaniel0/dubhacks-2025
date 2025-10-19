@@ -1,6 +1,5 @@
 "use client"
 
-import { photoLibrary } from "@/lib/photo-data"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { ArrowRight } from "lucide-react"

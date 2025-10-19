@@ -2,6 +2,7 @@ import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai"
 import type { FaceDetection } from "./types"
 
 export interface PhotoAnalysis {
+  title?: string
   description: string
   tags: string[]
   mood: string
@@ -14,6 +15,7 @@ interface GeminiFace {
 }
 
 interface GeminiAnalysis {
+  title: string
   description: string
   tags: string[]
   mood: string
@@ -33,25 +35,27 @@ class GeminiService {
     }
   }
 
-  async analyzePhoto(imageFile: File): Promise<PhotoAnalysis> {
+  async analyzePhoto(imageFile: File | Buffer, mimeType?: string): Promise<PhotoAnalysis> {
     if (!this.model) {
       throw new Error("Gemini API key not configured. Please add your API key to .env.local")
     }
 
     try {
-      // Convert File to base64
-      const imageData = await this.fileToGenerativePart(imageFile)
+      // Convert File or Buffer to base64
+      const imageData = await this.fileToGenerativePart(imageFile, mimeType)
 
-      const prompt = `Analyze this photo in detail and provide the following information in JSON format:
+      const prompt = `Analyze this photo and provide the following information in JSON format:
 
-1. A detailed, vivid description of the photo (2-3 sentences)
-2. A list of relevant tags/keywords (10-15 tags)
-3. The overall mood/emotion conveyed (one word: e.g., "joyful", "peaceful", "energetic", "nostalgic", "adventurous", "serene")
-4. Detect and describe any faces in the photo with approximate positions
+1. A concise, descriptive title (2-4 words that capture the essence of the photo)
+2. A brief description of the photo (1 sentence, max 15 words)
+3. A list of relevant tags/keywords (5-8 tags)
+4. The overall mood/emotion conveyed (one word: e.g., "joyful", "peaceful", "energetic", "nostalgic", "adventurous", "serene")
+5. Detect and describe any faces in the photo with approximate positions
 
 Return ONLY a valid JSON object with this exact structure:
 {
-  "description": "detailed description here",
+  "title": "Short Title Here",
+  "description": "Brief one-sentence description.",
   "tags": ["tag1", "tag2", "tag3"],
   "mood": "mood word",
   "faces": [
@@ -84,6 +88,7 @@ If no faces are detected, return an empty array for faces.`
       }))
 
       return {
+        title: analysis.title || "",
         description: analysis.description || "",
         tags: analysis.tags || [],
         mood: analysis.mood || "neutral",
@@ -95,7 +100,21 @@ If no faces are detected, return an empty array for faces.`
     }
   }
 
-  private async fileToGenerativePart(file: File): Promise<{ inlineData: { data: string; mimeType: string } }> {
+  private async fileToGenerativePart(
+    file: File | Buffer,
+    mimeType?: string
+  ): Promise<{ inlineData: { data: string; mimeType: string } }> {
+    // Handle Buffer (server-side)
+    if (Buffer.isBuffer(file)) {
+      return {
+        inlineData: {
+          data: file.toString("base64"),
+          mimeType: mimeType || "image/jpeg",
+        },
+      }
+    }
+
+    // Handle File (client-side)
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onloadend = () => {
