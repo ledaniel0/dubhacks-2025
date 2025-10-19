@@ -169,11 +169,9 @@ export default function HomePage() {
   }
 
   const handleNavigate = (view: string) => {
+    // Always clear search when changing tabs (same as clear search button)
+    handleClearSearch()
     setActiveView(view)
-    // Clear search mode when navigating away from home and library (pages that support search)
-    if (view !== "home" && view !== "library") {
-      handleClearSearch()
-    }
   }
 
   const handlePhotoClick = (photo: Photo) => {
@@ -241,7 +239,7 @@ export default function HomePage() {
           <div className="relative">
             {/* Home Content - Only visible when NOT in search mode */}
             {!isSearchMode && (
-              <div className="transition-all duration-500">
+              <div className="transition-all duration-500 pt-4">
                 <RecentPhotos onViewAll={() => handleNavigate("library")} onPhotoClick={handlePhotoClick} refreshTrigger={refreshTrigger} />
                 <div className="max-w-7xl mx-auto px-8 py-12">
                   <div className="flex items-center justify-between mb-6">
