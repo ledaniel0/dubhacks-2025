@@ -172,7 +172,7 @@ export default function HomePage() {
 
         {activeView === "albums" && <AlbumsList onAlbumClick={(id) => console.log("Album clicked:", id)} />}
 
-        {activeView === "shared" && <SharedAlbums onAlbumClick={(id) => console.log("Shared album clicked:", id)} />}
+        {activeView === "shared" && <SharedAlbums onAlbumClick={(id) => console.log("Shared album clicked:", id)} onCreateSharedAlbum={() => setIsCreateSharedAlbumOpen(true)} />}
 
         {activeView === "library" && <Library />}
       </main>
