@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Share2, Sparkles, Download, FolderPlus, Upload } from "lucide-react"
-import { photoLibrary, addSharedAlbum, addAlbum, albums } from "@/lib/photo-data"
+import { photoLibrary, addSharedAlbum, addPhotosToSharedAlbum, addAlbum, albums } from "@/lib/photo-data"
 import { cn } from "@/lib/utils"
 import { useState, useEffect } from "react"
 import type { Photo, Album, PublicAlbum } from "@/lib/types"
@@ -120,6 +120,7 @@ export default function HomePage() {
     setSearchResults([])
     setInitialSearchQuery("")
     setRefineQuery("")
+    setCreatedSharedAlbum(null) // Clear shared album context when search is cleared
   }
 
   const handleAlbumCreated = (title: string, description: string, photoIds: number[]): number => {
@@ -156,12 +157,15 @@ export default function HomePage() {
     
     setIsCreatingSharedAlbum(false)
     setIsCreateSharedAlbumOpen(false)
-    
+
     // Clear form fields after successful creation
     setSharedAlbumTitle("")
     setSharedAlbumDescription("")
-    setCreatedSharedAlbum(null)
-    
+    // Note: createdSharedAlbum is NOT cleared here so PhotoBatch can use it
+
+    // Navigate to home view so PhotoBatch can be displayed
+    setActiveView("home")
+
     // Navigate to photo selection mode and trigger search
     handleSearch(albumTitle)
   }
@@ -177,9 +181,17 @@ export default function HomePage() {
 
   const handleAddToSharedAlbum = (photoIds: number[]) => {
     if (createdSharedAlbum) {
-      // In production, this would update the shared album with the new photos
-      console.log("Adding photos to shared album:", { albumId: createdSharedAlbum.id, photoIds })
-      
+      // Add photos to the shared album
+      const updatedAlbum = addPhotosToSharedAlbum(createdSharedAlbum.id, photoIds)
+
+      if (updatedAlbum) {
+        console.log("Successfully added photos to shared album:", updatedAlbum)
+
+        // Show success message (optional)
+        setShowAlbumSuccess(true)
+        setTimeout(() => setShowAlbumSuccess(false), 3000)
+      }
+
       // Clear the shared album context and return to home
       setCreatedSharedAlbum(null)
       setIsSearchMode(false)
