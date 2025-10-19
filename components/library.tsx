@@ -137,7 +137,7 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
       <div className="max-w-7xl mx-auto px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Library</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">Library</h1>
             <p className="text-muted-foreground">
               {isSearchMode 
                 ? `${searchResults?.length || 0} photos found for "${searchQuery}"`

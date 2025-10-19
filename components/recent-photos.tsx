@@ -3,6 +3,8 @@
 import { photoLibrary } from "@/lib/photo-data"
 import Image from "next/image"
 import { useState, useEffect } from "react"
+import { ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface RecentPhotosProps {
   onViewAll?: () => void
@@ -21,17 +23,19 @@ export function RecentPhotos({ onViewAll }: RecentPhotosProps) {
   }, [])
 
   return (
-    <section className="max-w-7xl mx-auto px-8 py-8">
+    <section className="max-w-7xl mx-auto px-8 pt-2 pb-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
           Recent Photos
         </h2>
-        <button
+        <Button
           onClick={onViewAll}
-          className="text-sm font-medium text-primary hover:text-accent transition-colors duration-200"
+          size="icon"
+          variant="outline"
+          className="h-10 w-10 border-2 border-primary/40 text-primary hover:text-primary hover:bg-gradient-to-r hover:from-[#FF6B35]/20 hover:via-[#E0338E]/20 hover:to-[#9D4EDD]/20 hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105"
         >
-          View All →
-        </button>
+          <ArrowRight className="h-5 w-5" />
+        </Button>
       </div>
       <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-3 auto-rows-[120px]">
         {recentPhotos.map((photo, index) => {

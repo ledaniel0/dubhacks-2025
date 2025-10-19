@@ -10,33 +10,44 @@
   --card-foreground: oklch(0.2 0.01 264);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2 0.01 264);
-  --primary: oklch(0.6 0.2 264);
+  /* Vibrant sunset orange */
+  --primary: oklch(0.68 0.22 40);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.97 0.005 264);
-  --secondary-foreground: oklch(0.2 0.01 264);
+  /* Electric blue */
+  --secondary: oklch(0.65 0.18 240);
+  --secondary-foreground: oklch(0.99 0 0);
   --muted: oklch(0.96 0.005 264);
   --muted-foreground: oklch(0.5 0.01 264);
-  --accent: oklch(0.65 0.18 280);
+  /* Deep purple/magenta */
+  --accent: oklch(0.62 0.24 310);
   --accent-foreground: oklch(0.99 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.99 0 0);
   --border: oklch(0.93 0.005 264);
   --input: oklch(0.98 0.002 264);
-  --ring: oklch(0.6 0.2 264);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --ring: oklch(0.68 0.22 40);
+  --chart-1: oklch(0.68 0.22 40);
+  --chart-2: oklch(0.65 0.18 240);
+  --chart-3: oklch(0.62 0.24 310);
+  --chart-4: oklch(0.70 0.20 25);
+  --chart-5: oklch(0.60 0.20 200);
   --radius: 0.75rem;
   --sidebar: oklch(0.985 0.002 264);
   --sidebar-foreground: oklch(0.3 0.01 264);
-  --sidebar-primary: oklch(0.6 0.2 264);
+  --sidebar-primary: oklch(0.68 0.22 40);
   --sidebar-primary-foreground: oklch(0.99 0 0);
   --sidebar-accent: oklch(0.97 0.005 264);
   --sidebar-accent-foreground: oklch(0.2 0.01 264);
   --sidebar-border: oklch(0.93 0.005 264);
-  --sidebar-ring: oklch(0.6 0.2 264);
+  --sidebar-ring: oklch(0.68 0.22 40);
+  
+  /* Vibrant gradient colors */
+  --gradient-orange: #FF6B35;
+  --gradient-gold: #F7931E;
+  --gradient-blue: #00B4D8;
+  --gradient-electric: #4A90E2;
+  --gradient-purple: #9D4EDD;
+  --gradient-magenta: #E0338E;
 }
 
 .dark {
@@ -46,32 +57,35 @@
   --card-foreground: oklch(0.98 0 0);
   --popover: oklch(0.16 0 0);
   --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.75 0.15 250);
+  /* Vibrant sunset orange for dark mode */
+  --primary: oklch(0.72 0.20 40);
   --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.22 0 0);
+  /* Electric blue for dark mode */
+  --secondary: oklch(0.70 0.16 240);
   --secondary-foreground: oklch(0.98 0 0);
   --muted: oklch(0.25 0 0);
   --muted-foreground: oklch(0.65 0 0);
-  --accent: oklch(0.75 0.15 250);
+  /* Deep purple/magenta for dark mode */
+  --accent: oklch(0.68 0.22 310);
   --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.98 0 0);
   --border: oklch(0.25 0 0);
   --input: oklch(0.22 0 0);
-  --ring: oklch(0.75 0.15 250);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --ring: oklch(0.72 0.20 40);
+  --chart-1: oklch(0.72 0.20 40);
+  --chart-2: oklch(0.70 0.16 240);
+  --chart-3: oklch(0.68 0.22 310);
+  --chart-4: oklch(0.75 0.18 25);
+  --chart-5: oklch(0.65 0.18 200);
   --sidebar: oklch(0.16 0 0);
   --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.75 0.15 250);
+  --sidebar-primary: oklch(0.72 0.20 40);
   --sidebar-primary-foreground: oklch(0.98 0 0);
   --sidebar-accent: oklch(0.22 0 0);
   --sidebar-accent-foreground: oklch(0.98 0 0);
   --sidebar-border: oklch(0.25 0 0);
-  --sidebar-ring: oklch(0.75 0.15 250);
+  --sidebar-ring: oklch(0.72 0.20 40);
 }
 
 @theme inline {
@@ -152,24 +166,67 @@
   }
 
   .shadow-glow {
-    box-shadow: 0 0 20px rgba(96, 165, 250, 0.3), 0 0 40px rgba(147, 51, 234, 0.2);
+    box-shadow: 0 0 30px rgba(255, 107, 53, 0.4), 0 0 60px rgba(224, 51, 142, 0.3), 0 0 90px rgba(74, 144, 226, 0.2);
   }
 
-  /* Animated gradient with smoother transitions */
+  /* Vibrant sunset gradient animations */
   @keyframes gradient-shift {
-    0%,
-    100% {
+    0% {
       background-position: 0% 50%;
+    }
+    25% {
+      background-position: 50% 75%;
     }
     50% {
       background-position: 100% 50%;
     }
+    75% {
+      background-position: 50% 25%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
   }
 
   .animated-gradient {
-    background: linear-gradient(135deg, var(--primary), var(--accent), var(--primary));
-    background-size: 200% 200%;
-    animation: gradient-shift 8s ease infinite;
+    background: linear-gradient(135deg, var(--gradient-orange), var(--gradient-gold), var(--gradient-magenta), var(--gradient-purple), var(--gradient-blue));
+    background-size: 400% 400%;
+    animation: gradient-shift 10s ease infinite;
+  }
+  
+  /* Pulsing glow effect for hero search */
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(255, 107, 53, 0.3), 0 0 40px rgba(224, 51, 142, 0.2);
+    }
+    50% {
+      box-shadow: 0 0 40px rgba(255, 107, 53, 0.5), 0 0 80px rgba(224, 51, 142, 0.4), 0 0 120px rgba(74, 144, 226, 0.3);
+    }
+  }
+  
+  .pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+  
+  /* Sunset shimmer effect */
+  @keyframes sunset-shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+  
+  .sunset-shimmer {
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(255, 107, 53, 0.2) 25%, 
+      rgba(247, 147, 30, 0.3) 50%, 
+      rgba(224, 51, 142, 0.2) 75%, 
+      transparent 100%);
+    background-size: 1000px 100%;
+    animation: sunset-shimmer 3s infinite;
   }
 
   /* Staggered fade-in animation for grid items */
@@ -188,25 +245,20 @@
     animation: fade-in-up 0.6s ease-out forwards;
   }
 
-  /* Custom scrollbar styling */
+  /* Hide scrollbar but allow scrolling */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 0px;
+    height: 0px;
   }
 
-  ::-webkit-scrollbar-track {
-    background: var(--muted);
-    border-radius: 4px;
+  /* For Firefox */
+  * {
+    scrollbar-width: none;
   }
 
-  ::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 4px;
-    transition: background 0.2s;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--accent);
+  /* For IE and Edge */
+  * {
+    -ms-overflow-style: none;
   }
 
   /* Magnetic hover effect for interactive elements */
