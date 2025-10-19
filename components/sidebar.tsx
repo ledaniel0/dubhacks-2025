@@ -6,9 +6,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 const navigation = [
   { name: "Home", icon: Home, id: "home" },
+  { name: "Library", icon: ImageIcon, id: "library" },
   { name: "Albums", icon: FolderOpen, id: "albums" },
   { name: "Shared", icon: Users, id: "shared" },
-  { name: "Library", icon: ImageIcon, id: "library" },
 ]
 
 interface SidebarProps {

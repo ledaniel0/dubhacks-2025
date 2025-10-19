@@ -37,13 +37,15 @@ export default function HomePage() {
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar activeView={activeView} onNavigate={handleNavigate} />
-      <TopHeader
-        onUploadClick={() => setIsUploadModalOpen(true)}
-        onSearch={handleSearch}
-        showSearch={activeView === "home" || activeView === "search-results"}
-      />
+      {(activeView === "home" || activeView === "search-results" || activeView === "library") && (
+        <TopHeader
+          onUploadClick={() => setIsUploadModalOpen(true)}
+          onSearch={handleSearch}
+          showSearch={activeView === "home" || activeView === "search-results" || activeView === "library"}
+        />
+      )}
 
-      <main className="flex-1 ml-64 pt-20">
+      <main className={`flex-1 ml-64 ${activeView === "home" || activeView === "search-results" || activeView === "library" ? "pt-20" : ""}`}>
         {activeView === "home" && (
           <div>
             <RecentPhotos />
