@@ -1,6 +1,6 @@
 "use client"
 
-import { Filter, ChevronDown } from "lucide-react"
+import { Filter, ChevronDown, CheckSquare, Square } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useState, useRef, useEffect, useMemo, useCallback } from "react"
 import { PhotoCard } from "./photo-card"
+import { cn } from "@/lib/utils"
 import type { Photo } from "@/lib/types"
 
 type SortOption = "date-desc" | "date-asc" | "name-asc" | "name-desc" | "location" | "liked"
@@ -30,17 +31,54 @@ interface LibraryProps {
   isLoading?: boolean
   onPhotoClick?: (photo: Photo) => void
   refreshTrigger?: number
+  onSelectionChange?: (selectedPhotos: Photo[], isSelectionMode: boolean) => void
+  clearSelectionTrigger?: number
 }
 
-export function Library({ searchResults, isSearchMode = false, searchQuery = "", isLoading = false, onPhotoClick, refreshTrigger }: LibraryProps = {}) {
+export function Library({ searchResults, isSearchMode = false, searchQuery = "", isLoading = false, onPhotoClick, refreshTrigger, onSelectionChange, clearSelectionTrigger }: LibraryProps = {}) {
   const [photoLibrary, setPhotoLibrary] = useState<Photo[]>([])
   const [likedPhotos, setLikedPhotos] = useState<Set<number>>(new Set())
   const [sortBy, setSortBy] = useState<SortOption>("date-desc")
   const [displayCount, setDisplayCount] = useState(20)
   const [isLoadingPhotos, setIsLoadingPhotos] = useState(true)
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [selectedPhotos, setSelectedPhotos] = useState<Set<number>>(new Set())
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Clear selections when trigger changes
+  useEffect(() => {
+    if (clearSelectionTrigger !== undefined && clearSelectionTrigger > 0) {
+      setIsSelectionMode(false)
+      setSelectedPhotos(new Set())
+      onSelectionChange?.([], false)
+    }
+  }, [clearSelectionTrigger])
+
+  // Toggle selection mode
+  const toggleSelectionMode = () => {
+    const newSelectionMode = !isSelectionMode
+    setIsSelectionMode(newSelectionMode)
+    if (!newSelectionMode) {
+      setSelectedPhotos(new Set())
+      onSelectionChange?.([], newSelectionMode)
+    } else {
+      onSelectionChange?.(Array.from(selectedPhotos).map(id => photoLibrary.find(p => p.id === id)).filter(Boolean) as Photo[], newSelectionMode)
+    }
+  }
+
+  // Toggle photo selection
+  const togglePhotoSelection = (photoId: number) => {
+    const newSelected = new Set(selectedPhotos)
+    if (newSelected.has(photoId)) {
+      newSelected.delete(photoId)
+    } else {
+      newSelected.add(photoId)
+    }
+    setSelectedPhotos(newSelected)
+    onSelectionChange?.(Array.from(newSelected).map(id => photoLibrary.find(p => p.id === id)).filter(Boolean) as Photo[], isSelectionMode)
+  }
 
   // Fetch photos from API on mount and when refreshTrigger changes
   useEffect(() => {
@@ -212,7 +250,20 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
               }
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={toggleSelectionMode}
+              variant={isSelectionMode ? "default" : "outline"}
+              className={cn(
+                "border-2 transition-all duration-300 hover:shadow-glow hover:scale-105",
+                isSelectionMode 
+                  ? "bg-gradient-to-r from-[#FF6B35] to-[#E0338E] text-white border-primary" 
+                  : "border-primary/40 text-primary hover:text-primary hover:bg-gradient-to-r hover:from-[#FF6B35]/20 hover:via-[#E0338E]/20 hover:to-[#9D4EDD]/20 hover:border-primary"
+              )}
+            >
+              {isSelectionMode ? <CheckSquare className="h-4 w-4 mr-2" /> : <Square className="h-4 w-4 mr-2" />}
+              {isSelectionMode ? "Selecting" : "Select"}
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
@@ -238,7 +289,28 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {displayedPhotos.map((photo) => (
-            <PhotoCard key={photo.id} photo={photo} isLiked={likedPhotos.has(photo.id)} onToggleLike={toggleLike} onPhotoClick={onPhotoClick} />
+            <div key={photo.id} className="relative">
+              <PhotoCard 
+                photo={photo} 
+                isLiked={likedPhotos.has(photo.id)} 
+                onToggleLike={toggleLike} 
+                onPhotoClick={isSelectionMode ? () => togglePhotoSelection(photo.id) : onPhotoClick}
+                isSelectionMode={isSelectionMode}
+                isSelected={selectedPhotos.has(photo.id)}
+              />
+              {isSelectionMode && (
+                <div className="absolute top-2 right-2 z-10">
+                  <div className={cn(
+                    "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200",
+                    selectedPhotos.has(photo.id) 
+                      ? "bg-primary border-primary text-primary-foreground" 
+                      : "bg-background/80 border-foreground/20 text-foreground/60"
+                  )}>
+                    {selectedPhotos.has(photo.id) && <CheckSquare className="h-4 w-4" />}
+                  </div>
+                </div>
+              )}
+            </div>
           ))}
         </div>
 

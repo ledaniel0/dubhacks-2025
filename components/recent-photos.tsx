@@ -1,10 +1,11 @@
 "use client"
 
 import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { photoLibrary } from "@/lib/photo-data"
+import { cn } from "@/lib/utils"
 import type { Photo } from "@/lib/types"
 
 interface RecentPhotosProps {
@@ -40,10 +41,10 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
   // Initialize with static data immediately - no delay!
   useEffect(() => {
     const seed = Date.now()
-    const initialPhotos = shuffleArrayWithSeed(photoLibrary, seed).slice(0, 13)
+    const initialPhotos = shuffleArrayWithSeed(photoLibrary, seed).slice(0, 12)
     setDisplayedPhotos(initialPhotos)
 
-    // Create pool of available indices (excluding initial 13)
+    // Create pool of available indices (excluding initial 12)
     const usedIds = new Set(initialPhotos.map(p => p.id))
     const available = photoLibrary
       .map((_, index) => index)
@@ -83,19 +84,24 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
     displayedPhotos.forEach((photo, index) => {
       setTimeout(() => {
         setAnimatedPhotos((prev) => new Set(prev).add(photo.id))
+        console.log(`Animating photo ${photo.id} at index ${index}`)
       }, index * 30) // Reduced from 100ms to 30ms - 390ms total
     })
   }, [displayedPhotos.length])
 
   // Continuous photo rotation
   useEffect(() => {
-    if (displayedPhotos.length === 0 || allPhotos.length <= 13) return
+    if (displayedPhotos.length === 0 || allPhotos.length <= 12) return
 
     let currentAvailableIndices = [...availablePhotoIndices]
+    let isRotating = false
 
     const rotatePhoto = () => {
-      // Pick a random slot (0-12) to replace
-      const slotToReplace = Math.floor(Math.random() * 13)
+      if (isRotating) return
+      isRotating = true
+
+      // Pick a random slot (0-11) to replace
+      const slotToReplace = Math.floor(Math.random() * 12)
       const photoToReplace = displayedPhotos[slotToReplace]
 
       // Get currently displayed photo IDs
@@ -119,6 +125,7 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
         currentAvailableIndices = allPhotos
           .map((_, index) => index)
           .filter(index => !currentlyDisplayedIds.has(allPhotos[index].id))
+        isRotating = false
         return
       }
 
@@ -134,10 +141,17 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
       }
 
       // Start fade out animation (slower)
-      setFadingPhotos((prev) => new Set(prev).add(photoToReplace.id))
+      console.log(`Fading out photo ${photoToReplace.id}`)
+      setFadingPhotos((prev) => {
+        const newSet = new Set(prev)
+        newSet.add(photoToReplace.id)
+        console.log(`Fading photos set:`, Array.from(newSet))
+        return newSet
+      })
       setAnimatedPhotos((prev) => {
         const newSet = new Set(prev)
         newSet.delete(photoToReplace.id)
+        console.log(`Animated photos set:`, Array.from(newSet))
         return newSet
       })
 
@@ -152,12 +166,19 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
         setFadingPhotos((prev) => {
           const newSet = new Set(prev)
           newSet.delete(photoToReplace.id)
+          console.log(`Cleared fading photos set:`, Array.from(newSet))
           return newSet
         })
 
         // Fade in new photo (slower, more gradual)
         setTimeout(() => {
-          setAnimatedPhotos((prev) => new Set(prev).add(newPhoto.id))
+          console.log(`Fading in photo ${newPhoto.id}`)
+          setAnimatedPhotos((prev) => {
+            const newSet = new Set(prev)
+            newSet.add(newPhoto.id)
+            console.log(`Added to animated photos set:`, Array.from(newSet))
+            return newSet
+          })
         }, 200)
 
         // Add old photo back to available pool
@@ -165,6 +186,8 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
         if (oldPhotoIndex !== -1 && !currentAvailableIndices.includes(oldPhotoIndex)) {
           currentAvailableIndices.push(oldPhotoIndex)
         }
+        
+        isRotating = false
       }, 1500) // Slower fade out duration - 1.5 seconds
     }
 
@@ -180,28 +203,20 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
     const timeoutId = scheduleNextRotation()
 
     return () => clearTimeout(timeoutId)
-  }, [displayedPhotos, allPhotos, availablePhotoIndices])
+  }, [allPhotos.length]) // Only depend on allPhotos.length, not the full arrays
 
   // No loading state needed - photos appear instantly!
   return (
-    <section className="max-w-7xl mx-auto px-8 pt-2 pb-0">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Memories
-        </h2>
-        <Button
-          onClick={onViewAll}
-          variant="outline"
-          className="border-2 border-primary/40 text-primary hover:text-primary hover:bg-gradient-to-r hover:from-[#FF6B35]/20 hover:via-[#E0338E]/20 hover:to-[#9D4EDD]/20 hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105"
-        >
-          More Photos
-          <ArrowRight className="h-5 w-5 ml-2" />
-        </Button>
-      </div>
+    <section className="max-w-7xl mx-auto px-8 pt-2 pb-0" data-section="memories">
       <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 md:gap-3 auto-rows-[100px] md:auto-rows-[150px] lg:auto-rows-[200px]">
         {displayedPhotos.map((photo, index) => {
           const isAnimated = animatedPhotos.has(photo.id)
           const isFading = fadingPhotos.has(photo.id)
+          
+          // Debug logging
+          if (index === 0) {
+            console.log(`Photo ${photo.id}: isAnimated=${isAnimated}, isFading=${isFading}`)
+          }
 
           // Responsive layout: scales from 6 cols (mobile) -> 8 cols (tablet) -> 12 cols (desktop)
           // Photos maintain proportional sizes across breakpoints
@@ -219,7 +234,7 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
           else if (index === 6) { colSpan = 3; rowSpan = 1 }  // Medium
           else if (index === 7) { colSpan = 2; rowSpan = 1 }  // Small
           else if (index === 8) { colSpan = 2; rowSpan = 1 }  // Small
-          else if (index === 9) { colSpan = 2; rowSpan = 1 }  // Small
+          else if (index === 9) { colSpan = 3; rowSpan = 1 }  // Medium
           else if (index === 10) { colSpan = 3; rowSpan = 1 } // Medium
           else if (index === 11) { colSpan = 2; rowSpan = 1 } // Small
           else if (index === 12) { colSpan = 3; rowSpan = 1 } // Medium
@@ -229,16 +244,17 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
             <div
               key={`${photo.id}-${index}`}
               onClick={() => onPhotoClick?.(photo)}
-              className={`
-                group relative overflow-hidden rounded-3xl bg-muted cursor-pointer
-                transition-all duration-[2000ms] ease-in-out
-                col-span-${colSpan} row-span-${rowSpan}
-                ${isAnimated && !isFading ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-6 scale-90"}
-              `}
+              className={cn(
+                "group relative overflow-hidden rounded-3xl bg-muted cursor-pointer transition-all duration-500 ease-in-out",
+                `col-span-${colSpan} row-span-${rowSpan}`,
+                isAnimated && !isFading ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-4 scale-95"
+              )}
               style={{
                 boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.12)",
                 gridColumn: `span ${colSpan}`,
                 gridRow: `span ${rowSpan}`,
+                opacity: isAnimated && !isFading ? 1 : 0,
+                transform: isAnimated && !isFading ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.95)',
               }}
             >
               <Image
@@ -250,6 +266,22 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
             </div>
           )
         })}
+        
+        {/* More Photos Button - Last item in grid */}
+        <div 
+          className="col-span-2 row-span-1 relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-dashed border-primary/40 cursor-pointer transition-all duration-300 hover:border-primary hover:bg-gradient-to-br hover:from-primary/30 hover:to-accent/30 hover:scale-105 group"
+          onClick={onViewAll}
+        >
+          <div className="absolute inset-0 bg-background/20 backdrop-blur-sm"></div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+            <div className="bg-primary/20 rounded-full p-3 mb-2 group-hover:bg-primary/30 transition-colors duration-300">
+              <ArrowRight className="h-6 w-6 text-primary" />
+            </div>
+            <span className="text-sm font-semibold text-primary group-hover:text-primary/80 transition-colors duration-300">
+              More Photos
+            </span>
+          </div>
+        </div>
       </div>
     </section>
   )
