@@ -12,6 +12,7 @@ import { PhotoDetail } from "@/components/photo-detail"
 import { AlbumDetail } from "@/components/album-detail"
 import { Explore } from "@/components/explore"
 import { ExplorePreview } from "@/components/explore-preview"
+import { Organize } from "@/components/organize"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -286,6 +287,8 @@ export default function HomePage() {
         )}
 
         {activeView === "albums" && <AlbumsList key={albumsUpdated} onAlbumClick={handleAlbumClick} />}
+
+        {activeView === "organize" && <Organize onPhotoClick={handlePhotoClick} />}
 
         {activeView === "shared" && <SharedAlbums onAlbumClick={(id) => console.log("Shared album clicked:", id)} onCreateSharedAlbum={() => setIsCreateSharedAlbumOpen(true)} />}
 

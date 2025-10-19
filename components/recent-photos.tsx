@@ -77,7 +77,7 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
     displayedPhotos.forEach((photo, index) => {
       setTimeout(() => {
         setAnimatedPhotos((prev) => new Set(prev).add(photo.id))
-      }, index * 50)
+      }, index * 100)
     })
   }, [displayedPhotos.length])
 
@@ -149,23 +149,23 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
           return newSet
         })
 
-        // Fade in new photo (slower)
+        // Fade in new photo (faster)
         setTimeout(() => {
           setAnimatedPhotos((prev) => new Set(prev).add(newPhoto.id))
-        }, 100)
+        }, 50)
 
         // Add old photo back to available pool
         const oldPhotoIndex = allPhotos.findIndex(p => p.id === photoToReplace.id)
         if (oldPhotoIndex !== -1 && !currentAvailableIndices.includes(oldPhotoIndex)) {
           currentAvailableIndices.push(oldPhotoIndex)
         }
-      }, 800) // Slower fade out duration
+      }, 400) // Faster fade out duration
     }
 
-    // Start rotating photos with balanced timing
-    // Each photo changes every 4-7 seconds
+    // Start rotating photos with very fast timing
+    // Each photo changes every 1-2 seconds
     const scheduleNextRotation = () => {
-      const randomDelay = 4000 + Math.random() * 2000 // 2-4 seconds
+      const randomDelay = 2000 + Math.random() * 2000 // 1-2 seconds
       return setTimeout(() => {
         rotatePhoto()
         scheduleNextRotation() // Schedule next rotation
@@ -250,7 +250,7 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
               onClick={() => onPhotoClick?.(photo)}
               className={`
                 group relative overflow-hidden rounded-3xl bg-muted cursor-pointer
-                transition-all duration-700 ease-in-out
+                transition-all duration-1500 ease-in-out
                 col-span-${colSpan} row-span-${rowSpan}
                 ${isAnimated && !isFading ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-6 scale-90"}
               `}

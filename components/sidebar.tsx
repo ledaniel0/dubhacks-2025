@@ -1,12 +1,13 @@
 "use client"
 
-import { Home, FolderOpen, Sparkles, Users, ImageIcon, User, Compass } from "lucide-react"
+import { Home, FolderOpen, Sparkles, Users, ImageIcon, User, Compass, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navigation = [
   { name: "Home", icon: Home, id: "home" },
   { name: "Library", icon: ImageIcon, id: "library" },
   { name: "Albums", icon: FolderOpen, id: "albums" },
+  { name: "Organize", icon: Wand2, id: "organize" },
   { name: "Shared", icon: Users, id: "shared" },
   { name: "Explore", icon: Compass, id: "explore" },
 ]
