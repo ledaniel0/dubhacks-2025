@@ -1009,6 +1009,97 @@ export const basePhotoLibrary: Photo[] = [
 export const photoLibrary = basePhotoLibrary
 
 /**
+ * PUBLIC ALBUM PHOTOS
+ * Photos that exist only in public albums, not in personal library
+ * These represent community-contributed photos for public locations
+ */
+export const publicAlbumPhotos: Photo[] = [
+  // Mariners Photos
+  createPhoto({
+    id: 100,
+    name: "Mariners Game Action",
+    url: "/images/mariners/mariners3.jpg",
+    description: "Exciting Mariners game action at T-Mobile Park",
+    date: "October 2024",
+    location: "Seattle, WA",
+    tags: ["mariners", "baseball", "game", "seattle", "sports", "t-mobile-park"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 101,
+    name: "Mariners Stadium View",
+    url: "/images/mariners/mariners4.jpeg",
+    description: "Beautiful view of T-Mobile Park during the game",
+    date: "October 2024",
+    location: "Seattle, WA",
+    tags: ["mariners", "stadium", "t-mobile-park", "seattle", "baseball"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 102,
+    name: "Mariners Playoff Atmosphere",
+    url: "/images/mariners/mariners5.jpg",
+    description: "Electric playoff atmosphere at T-Mobile Park",
+    date: "October 2024",
+    location: "Seattle, WA",
+    tags: ["mariners", "playoffs", "atmosphere", "seattle", "baseball", "fans"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 103,
+    name: "Mariners Victory Celebration",
+    url: "/images/mariners/mariners8.jpg",
+    description: "Mariners victory celebration with fans",
+    date: "October 2024",
+    location: "Seattle, WA",
+    tags: ["mariners", "victory", "celebration", "seattle", "baseball", "fans"],
+    liked: true,
+  }),
+  
+  // Umi Photos
+  createPhoto({
+    id: 95,
+    name: "Umi Restaurant",
+    url: "/images/umi/umi.jpeg",
+    description: "Beautiful Umi restaurant interior",
+    date: "2024",
+    location: "Seattle, WA",
+    tags: ["umi", "restaurant", "japanese", "seattle", "dining"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 96,
+    name: "Umi Sushi Bar",
+    url: "/images/umi/umi2.jpg",
+    description: "Elegant sushi bar at Umi",
+    date: "2024",
+    location: "Seattle, WA",
+    tags: ["umi", "sushi", "bar", "japanese", "seattle"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 97,
+    name: "Umi Dining Experience",
+    url: "/images/umi/umi5.jpeg",
+    description: "Fine dining experience at Umi",
+    date: "2024",
+    location: "Seattle, WA",
+    tags: ["umi", "dining", "japanese", "fine dining", "seattle"],
+    liked: true,
+  }),
+  createPhoto({
+    id: 98,
+    name: "Umi Interior",
+    url: "/images/umi/umi6.jpg",
+    description: "Sophisticated interior design at Umi",
+    date: "2024",
+    location: "Seattle, WA",
+    tags: ["umi", "interior", "design", "japanese", "seattle"],
+    liked: true,
+  }),
+]
+
+/**
  * PHOTO LIBRARY
  * Single source of truth for all photos in the app
  * Now includes both static photos and session-uploaded photos
@@ -1108,139 +1199,48 @@ export const sharedAlbums: SharedAlbum[] = [
 
 /**
  * PUBLIC ALBUMS
- * Community-driven albums based on public landmarks and locations
- * Photos are added by users who visited these places
+ * Community-driven albums based on local Seattle events, restaurants, and landmarks
+ * AI can detect these locations from photo metadata and suggest adding to public albums
  */
 export const publicAlbums: PublicAlbum[] = [
   {
     id: 1,
-    title: "Eiffel Tower",
-    location: "Paris, France",
-    description: "Iconic iron lattice tower and global symbol of France, visited by millions each year.",
-    photoIds: [], // Empty initially - users will add photos
-    contributorCount: 0,
-    photoCount: 0,
+    title: "ALCS Game 5",
+    location: "Seattle, WA",
+    description: "American League Championship Series Game 5 at T-Mobile Park. Mariners lead 3-2.",
+    photoIds: [100, 101, 102, 103],
+    contributorCount: 1,
+    photoCount: 4,
     isPublic: true,
-    tags: ["landmark", "architecture", "paris", "france", "europe"],
-    createdAt: "January 1, 2024",
-    lastContributed: "Never",
+    tags: ["baseball", "mariners", "playoffs", "seattle", "sports", "t-mobile-park"],
+    createdAt: "October 2024",
+    lastContributed: "Today",
   },
   {
     id: 2,
     title: "Umi Sake House",
     location: "Seattle, WA",
     description: "Premier sushi and Japanese cuisine restaurant in Seattle's Belltown neighborhood.",
-    photoIds: [],
-    contributorCount: 0,
-    photoCount: 0,
+    photoIds: [95, 96, 97, 98],
+    contributorCount: 1,
+    photoCount: 4,
     isPublic: true,
-    tags: ["restaurant", "sushi", "japanese", "seattle", "food"],
+    tags: ["restaurant", "sushi", "japanese", "seattle", "food", "belltown"],
     createdAt: "January 1, 2024",
-    lastContributed: "Never",
+    lastContributed: "Today",
   },
   {
     id: 3,
-    title: "Golden Gate Bridge",
-    location: "San Francisco, CA",
-    description: "Spectacular suspension bridge connecting San Francisco to Marin County.",
-    photoIds: [],
-    contributorCount: 0,
-    photoCount: 0,
-    isPublic: true,
-    tags: ["landmark", "bridge", "san-francisco", "california", "usa"],
-    createdAt: "January 1, 2024",
-    lastContributed: "Never",
-  },
-  {
-    id: 4,
-    title: "Central Park",
-    location: "New York, NY",
-    description: "Iconic urban park in Manhattan, a green oasis in the heart of New York City.",
-    photoIds: [],
-    contributorCount: 0,
-    photoCount: 0,
-    isPublic: true,
-    tags: ["park", "nature", "new-york", "manhattan", "urban"],
-    createdAt: "January 1, 2024",
-    lastContributed: "Never",
-  },
-  {
-    id: 5,
-    title: "Space Needle",
+    title: "DubHacks 2025",
     location: "Seattle, WA",
-    description: "Seattle's most recognizable landmark and observation tower offering panoramic city views.",
-    photoIds: [],
-    contributorCount: 0,
-    photoCount: 0,
+    description: "The University of Washington's premier hackathon.",
+    photoIds: [22, 23, 24, 25, 26, 27],
+    contributorCount: 1,
+    photoCount: 6,
     isPublic: true,
-    tags: ["landmark", "seattle", "observation-tower", "washington", "architecture"],
-    createdAt: "January 1, 2024",
-    lastContributed: "Never",
-  },
-  {
-    id: 6,
-    title: "Times Square",
-    location: "New York, NY",
-    description: "Bustling commercial intersection and entertainment hub in Midtown Manhattan.",
-    photoIds: [],
-    contributorCount: 0,
-    photoCount: 0,
-    isPublic: true,
-    tags: ["landmark", "entertainment", "new-york", "manhattan", "urban"],
-    createdAt: "January 1, 2024",
-    lastContributed: "Never",
-  },
-  {
-    id: 7,
-    title: "Pike Place Market",
-    location: "Seattle, WA",
-    description: "Historic public market overlooking Elliott Bay, home to the original Starbucks.",
-    photoIds: [],
-    contributorCount: 0,
-    photoCount: 0,
-    isPublic: true,
-    tags: ["market", "seattle", "food", "historic", "waterfront"],
-    createdAt: "January 1, 2024",
-    lastContributed: "Never",
-  },
-  {
-    id: 8,
-    title: "Grand Canyon",
-    location: "Arizona, USA",
-    description: "Massive natural canyon carved by the Colorado River, one of the world's natural wonders.",
-    photoIds: [],
-    contributorCount: 0,
-    photoCount: 0,
-    isPublic: true,
-    tags: ["nature", "canyon", "arizona", "national-park", "landscape"],
-    createdAt: "January 1, 2024",
-    lastContributed: "Never",
-  },
-  {
-    id: 9,
-    title: "Statue of Liberty",
-    location: "New York, NY",
-    description: "Colossal neoclassical sculpture on Liberty Island, symbol of freedom and democracy.",
-    photoIds: [],
-    contributorCount: 0,
-    photoCount: 0,
-    isPublic: true,
-    tags: ["landmark", "statue", "new-york", "monument", "historic"],
-    createdAt: "January 1, 2024",
-    lastContributed: "Never",
-  },
-  {
-    id: 10,
-    title: "Hollywood Sign",
-    location: "Los Angeles, CA",
-    description: "Iconic sign and American cultural symbol on Mount Lee in the Hollywood Hills.",
-    photoIds: [],
-    contributorCount: 0,
-    photoCount: 0,
-    isPublic: true,
-    tags: ["landmark", "hollywood", "los-angeles", "california", "entertainment"],
-    createdAt: "January 1, 2024",
-    lastContributed: "Never",
+    tags: ["hackathon", "uw", "seattle", "tech", "programming", "innovation"],
+    createdAt: "October 2025",
+    lastContributed: "Today",
   },
 ]
 
@@ -1265,6 +1265,18 @@ export function getPhotosByIds(photoIds: number[]): Photo[] {
 // Helper function to get album cover (first 4 photos)
 export function getAlbumThumbnails(photoIds: number[]): string[] {
   return getPhotosByIds(photoIds.slice(0, 4)).map((photo) => photo.url)
+}
+
+// Helper function to get photos for public albums
+export function getPublicAlbumPhotos(photoIds: number[]): Photo[] {
+  return photoIds
+    .map((id) => publicAlbumPhotos.find((photo) => photo.id === id))
+    .filter((photo): photo is Photo => photo !== undefined)
+}
+
+// Helper function to get public album cover photo
+export function getPublicAlbumCoverPhoto(photoId: number): Photo | undefined {
+  return publicAlbumPhotos.find((photo) => photo.id === photoId)
 }
 
 /**
