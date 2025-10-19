@@ -192,6 +192,8 @@ export default function HomePage() {
 
   const handleCloseAlbumDetail = () => {
     setSelectedAlbum(null)
+    // Clear any selected photo to prevent photo modal from opening
+    setSelectedPhoto(null)
   }
 
   const handlePublicAlbumClick = (album: PublicAlbum) => {
@@ -442,10 +444,13 @@ export default function HomePage() {
           album={selectedAlbum}
           onClose={handleCloseAlbumDetail}
           onPhotoClick={(photoId) => {
-            const photo = photoLibrary.find(p => p.id === photoId)
-            if (photo) {
-              setSelectedPhoto(photo)
-            }
+            // Add a small delay to prevent photo modal from opening when album is closing
+            setTimeout(() => {
+              const photo = photoLibrary.find(p => p.id === photoId)
+              if (photo && selectedAlbum) { // Only open if album is still selected
+                setSelectedPhoto(photo)
+              }
+            }, 100)
           }}
         />
       )}
