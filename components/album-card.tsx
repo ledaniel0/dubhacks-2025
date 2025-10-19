@@ -40,34 +40,45 @@ export function AlbumCard({ album, onClick, isHovered, onHoverChange, variant = 
           )}
         >
           <button onClick={onClick} className="w-full text-left">
-            <div className="relative overflow-hidden bg-muted aspect-[4/3]">
-              <img
-                src={thumbnails[0] || "/placeholder.svg"}
-                alt={album.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            {/* Pinterest-style grid: one large image on left, two smaller stacked on right */}
+            <div className="relative overflow-hidden bg-muted rounded-2xl" style={{ height: "200px" }}>
+              <div className="flex h-full gap-1">
+                {/* Large image on left (2/3 width) */}
+                <div className="flex-[2] relative overflow-hidden rounded-l-2xl bg-muted">
+                  <img
+                    src={thumbnails[0] || "/placeholder.svg"}
+                    alt={album.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                {/* Two smaller images stacked on right (1/3 width) */}
+                <div className="flex-1 flex flex-col gap-1">
+                  <div className="flex-1 relative overflow-hidden rounded-tr-2xl bg-muted">
+                    <img
+                      src={thumbnails[1] || "/placeholder.svg"}
+                      alt=""
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="flex-1 relative overflow-hidden rounded-br-2xl bg-muted">
+                    <img
+                      src={thumbnails[2] || "/placeholder.svg"}
+                      alt=""
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="p-5">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-foreground mb-1 group-hover:text-primary transition-colors duration-200">
-                    {album.title}
-                  </h3>
-                  {album.description && (
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{album.description}</p>
-                  )}
-                  <Badge
-                    variant="secondary"
-                    className="text-xs bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20"
-                  >
-                    {album.photoIds.length} photos
-                  </Badge>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                  <FolderOpen className="h-5 w-5 text-primary" />
-                </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors duration-200">
+                {album.title}
+              </h3>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="truncate">{album.owner || "You"}</span>
+                <span>•</span>
+                <span>{album.photoIds.length} {album.photoIds.length === 1 ? "photo" : "photos"}</span>
               </div>
             </div>
           </button>

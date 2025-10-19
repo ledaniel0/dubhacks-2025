@@ -1,6 +1,7 @@
 "use client"
 
 import { Sidebar } from "@/components/sidebar"
+import { TopHeader } from "@/components/top-header"
 import { SearchHero } from "@/components/search-hero"
 import { PhotoBatch } from "@/components/photo-batch"
 import { AlbumsList } from "@/components/albums-list"
@@ -61,9 +62,14 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar activeView={activeView} onNavigate={handleNavigate} onUploadClick={() => setIsUploadModalOpen(true)} />
+      <Sidebar activeView={activeView} onNavigate={handleNavigate} />
+      <TopHeader
+        onUploadClick={() => setIsUploadModalOpen(true)}
+        onSearch={handleSearch}
+        showSearch={activeView === "home" || activeView === "search-results"}
+      />
 
-      <main className="flex-1 ml-64">
+      <main className="flex-1 ml-64 pt-20">
         {activeView === "home" && (
           <div className="relative">
             {/* Search Hero - Always visible on home */}

@@ -1,8 +1,7 @@
 "use client"
 
-import { Home, FolderOpen, Upload, Sparkles, Users, ImageIcon } from "lucide-react"
+import { Home, FolderOpen, Sparkles, Users, ImageIcon, User } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 const navigation = [
@@ -15,10 +14,9 @@ const navigation = [
 interface SidebarProps {
   activeView: string
   onNavigate: (view: string) => void
-  onUploadClick: () => void
 }
 
-export function Sidebar({ activeView, onNavigate, onUploadClick }: SidebarProps) {
+export function Sidebar({ activeView, onNavigate }: SidebarProps) {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 border-r border-border/50 glass-effect z-50">
       <div className="flex h-full flex-col">
@@ -64,14 +62,15 @@ export function Sidebar({ activeView, onNavigate, onUploadClick }: SidebarProps)
         </TooltipProvider>
 
         <div className="border-t border-border/50 p-4">
-          <Button
-            onClick={onUploadClick}
-            className="w-full animated-gradient text-primary-foreground hover:opacity-90 transition-all duration-200 shadow-layered hover:shadow-layered-hover"
-            size="lg"
-          >
-            <Upload className="h-5 w-5 mr-2" />
-            Upload Photos
-          </Button>
+          <div className="flex items-center gap-3 px-3 py-2">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md">
+              <User className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">You</p>
+              <p className="text-xs text-muted-foreground truncate">user@echo.com</p>
+            </div>
+          </div>
         </div>
       </div>
     </aside>

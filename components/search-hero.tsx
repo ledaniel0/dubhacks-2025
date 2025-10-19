@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { Search, Sparkles } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Search, Sparkles, Send } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -73,10 +73,10 @@ export function SearchHero({ onSearch, isSearchActive = false, currentQuery = ""
               />
               <Button
                 onClick={handleSearch}
-                size="lg"
-                className="absolute right-2 h-12 bg-gradient-to-r from-primary to-accent text-primary-foreground hover:shadow-glow hover:scale-105 transition-all duration-300 shadow-md"
+                size="icon"
+                className="absolute right-2 h-12 w-12 bg-gradient-to-r from-primary to-accent text-primary-foreground hover:shadow-glow hover:scale-105 transition-all duration-300 shadow-md"
               >
-                Search
+                <Send className="h-5 w-5 rotate-45 -translate-x-[1px]" />
               </Button>
             </div>
           </div>
