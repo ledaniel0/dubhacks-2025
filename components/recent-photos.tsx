@@ -29,11 +29,13 @@ function shuffleArrayWithSeed<T>(array: T[], seed: number): T[] {
 }
 
 export function RecentPhotos({ onViewAll, onPhotoClick }: RecentPhotosProps) {
-  // Use a fixed seed for consistent shuffle on server and client
-  const [randomPhotos, setRandomPhotos] = useState<Photo[]>([])
+  const [allPhotos, setAllPhotos] = useState<Photo[]>([])
+  const [displayedPhotos, setDisplayedPhotos] = useState<Photo[]>([])
   const [animatedPhotos, setAnimatedPhotos] = useState<Set<number>>(new Set())
+  const [fadingPhotos, setFadingPhotos] = useState<Set<number>>(new Set())
   const [isLoading, setIsLoading] = useState(true)
-  
+  const [availablePhotoIndices, setAvailablePhotoIndices] = useState<number[]>([])
+
   useEffect(() => {
     // Fetch photos from API
     async function fetchPhotos() {
@@ -42,38 +44,145 @@ export function RecentPhotos({ onViewAll, onPhotoClick }: RecentPhotosProps) {
         const response = await fetch('/api/photos')
         const data = await response.json()
         const photos: Photo[] = data.photos || []
-        
-        // Only set random photos on client side after mount
-        const seed = 12345 // Fixed seed for consistency
-        setRandomPhotos(shuffleArrayWithSeed(photos, seed).slice(0, 13))
+
+        setAllPhotos(photos)
+
+        // Initialize with random 13 photos
+        const seed = Date.now()
+        const initialPhotos = shuffleArrayWithSeed(photos, seed).slice(0, 13)
+        setDisplayedPhotos(initialPhotos)
+
+        // Create pool of available indices (excluding initial 13)
+        const usedIds = new Set(initialPhotos.map(p => p.id))
+        const available = photos
+          .map((_, index) => index)
+          .filter(index => !usedIds.has(photos[index].id))
+        setAvailablePhotoIndices(available)
       } catch (error) {
         console.error('Error fetching photos:', error)
-        setRandomPhotos([])
+        setDisplayedPhotos([])
       } finally {
         setIsLoading(false)
       }
     }
-    
+
     fetchPhotos()
   }, [])
 
+  // Initial fade-in animation
   useEffect(() => {
-    if (randomPhotos.length === 0) return
-    
-    randomPhotos.forEach((photo, index) => {
+    if (displayedPhotos.length === 0) return
+
+    displayedPhotos.forEach((photo, index) => {
       setTimeout(() => {
         setAnimatedPhotos((prev) => new Set(prev).add(photo.id))
       }, index * 50)
     })
-  }, [randomPhotos])
+  }, [displayedPhotos.length])
+
+  // Continuous photo rotation
+  useEffect(() => {
+    if (displayedPhotos.length === 0 || allPhotos.length <= 13) return
+
+    let currentAvailableIndices = [...availablePhotoIndices]
+
+    const rotatePhoto = () => {
+      // Pick a random slot (0-12) to replace
+      const slotToReplace = Math.floor(Math.random() * 13)
+      const photoToReplace = displayedPhotos[slotToReplace]
+
+      // Get currently displayed photo IDs
+      const currentlyDisplayedIds = new Set(displayedPhotos.map(p => p.id))
+
+      // If no more available photos, reset the pool (excluding currently displayed)
+      if (currentAvailableIndices.length === 0) {
+        currentAvailableIndices = allPhotos
+          .map((_, index) => index)
+          .filter(index => !currentlyDisplayedIds.has(allPhotos[index].id))
+        setAvailablePhotoIndices(currentAvailableIndices)
+      }
+
+      // Filter out any photos that are currently displayed to prevent duplicates
+      const availableNonDisplayed = currentAvailableIndices.filter(
+        index => !currentlyDisplayedIds.has(allPhotos[index].id)
+      )
+
+      // If we somehow don't have any available photos (shouldn't happen), reset
+      if (availableNonDisplayed.length === 0) {
+        currentAvailableIndices = allPhotos
+          .map((_, index) => index)
+          .filter(index => !currentlyDisplayedIds.has(allPhotos[index].id))
+        return
+      }
+
+      // Pick a random photo from available pool that isn't currently displayed
+      const randomAvailableIndex = Math.floor(Math.random() * availableNonDisplayed.length)
+      const newPhotoIndex = availableNonDisplayed[randomAvailableIndex]
+      const newPhoto = allPhotos[newPhotoIndex]
+
+      // Remove used index from available pool
+      const indexInPool = currentAvailableIndices.indexOf(newPhotoIndex)
+      if (indexInPool !== -1) {
+        currentAvailableIndices.splice(indexInPool, 1)
+      }
+
+      // Start fade out animation (slower)
+      setFadingPhotos((prev) => new Set(prev).add(photoToReplace.id))
+      setAnimatedPhotos((prev) => {
+        const newSet = new Set(prev)
+        newSet.delete(photoToReplace.id)
+        return newSet
+      })
+
+      // After fade out completes, swap the photo and fade in
+      setTimeout(() => {
+        setDisplayedPhotos((prev) => {
+          const newPhotos = [...prev]
+          newPhotos[slotToReplace] = newPhoto
+          return newPhotos
+        })
+
+        setFadingPhotos((prev) => {
+          const newSet = new Set(prev)
+          newSet.delete(photoToReplace.id)
+          return newSet
+        })
+
+        // Fade in new photo (slower)
+        setTimeout(() => {
+          setAnimatedPhotos((prev) => new Set(prev).add(newPhoto.id))
+        }, 100)
+
+        // Add old photo back to available pool
+        const oldPhotoIndex = allPhotos.findIndex(p => p.id === photoToReplace.id)
+        if (oldPhotoIndex !== -1 && !currentAvailableIndices.includes(oldPhotoIndex)) {
+          currentAvailableIndices.push(oldPhotoIndex)
+        }
+      }, 800) // Slower fade out duration
+    }
+
+    // Start rotating photos with balanced timing
+    // Each photo changes every 4-7 seconds
+    const scheduleNextRotation = () => {
+      const randomDelay = 4000 + Math.random() * 2000 // 2-4 seconds
+      return setTimeout(() => {
+        rotatePhoto()
+        scheduleNextRotation() // Schedule next rotation
+      }, randomDelay)
+    }
+
+    const timeoutId = scheduleNextRotation()
+
+    return () => clearTimeout(timeoutId)
+  }, [displayedPhotos, allPhotos, availablePhotoIndices])
   
   // Show loading state or don't render until photos are loaded
-  if (isLoading || randomPhotos.length === 0) {
+  if (isLoading || displayedPhotos.length === 0) {
     return (
       <section className="max-w-7xl mx-auto px-8 pt-2 pb-0">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Random Photos
+            Memories
           </h2>
         </div>
         <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 md:gap-3 auto-rows-[100px] md:auto-rows-[150px] lg:auto-rows-[200px]">
@@ -96,7 +205,7 @@ export function RecentPhotos({ onViewAll, onPhotoClick }: RecentPhotosProps) {
     <section className="max-w-7xl mx-auto px-8 pt-2 pb-0">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Random Photos
+          Memories
         </h2>
         <Button
           onClick={onViewAll}
@@ -108,8 +217,9 @@ export function RecentPhotos({ onViewAll, onPhotoClick }: RecentPhotosProps) {
         </Button>
       </div>
       <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 md:gap-3 auto-rows-[100px] md:auto-rows-[150px] lg:auto-rows-[200px]">
-        {randomPhotos.map((photo, index) => {
+        {displayedPhotos.map((photo, index) => {
           const isAnimated = animatedPhotos.has(photo.id)
+          const isFading = fadingPhotos.has(photo.id)
 
           // Responsive layout: scales from 6 cols (mobile) -> 8 cols (tablet) -> 12 cols (desktop)
           // Photos maintain proportional sizes across breakpoints
@@ -135,13 +245,13 @@ export function RecentPhotos({ onViewAll, onPhotoClick }: RecentPhotosProps) {
 
           return (
             <div
-              key={photo.id}
+              key={`${photo.id}-${index}`}
               onClick={() => onPhotoClick?.(photo)}
               className={`
                 group relative overflow-hidden rounded-3xl bg-muted cursor-pointer
-                transition-all duration-300
+                transition-all duration-700 ease-in-out
                 col-span-${colSpan} row-span-${rowSpan}
-                ${isAnimated ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
+                ${isAnimated && !isFading ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-6 scale-90"}
               `}
               style={{
                 boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.12)",
