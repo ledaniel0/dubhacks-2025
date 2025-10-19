@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Share2, Sparkles } from "lucide-react"
-import { photoLibrary, addSharedAlbum, addAlbum } from "@/lib/photo-data"
+import { addSharedAlbum, addAlbum } from "@/lib/photo-data"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
 import type { Photo } from "@/lib/types"
@@ -48,19 +48,29 @@ export default function HomePage() {
     setSearchResults([])
     
     // Simulate AI search processing with delay (like ChatGPT)
-    setTimeout(() => {
-      // In production, this would call your AI API
-      // For now, filter photos based on query
-      const results = photoLibrary.filter(
-        (photo) =>
-          photo.name.toLowerCase().includes(query.toLowerCase()) ||
-          photo.location.toLowerCase().includes(query.toLowerCase()) ||
-          photo.tags.some((tag) => tag.toLowerCase().includes(query.toLowerCase())) ||
-          photo.description?.toLowerCase().includes(query.toLowerCase()),
-      )
-      
-      setSearchResults(results)
-      setIsSearching(false)
+    setTimeout(async () => {
+      try {
+        // Fetch photos from API
+        const response = await fetch('/api/photos')
+        const data = await response.json()
+        const photos: Photo[] = data.photos || []
+        
+        // Filter photos based on query
+        const results = photos.filter(
+          (photo) =>
+            photo.name.toLowerCase().includes(query.toLowerCase()) ||
+            photo.location.toLowerCase().includes(query.toLowerCase()) ||
+            photo.tags.some((tag) => tag.toLowerCase().includes(query.toLowerCase())) ||
+            photo.description?.toLowerCase().includes(query.toLowerCase()),
+        )
+        
+        setSearchResults(results)
+        setIsSearching(false)
+      } catch (error) {
+        console.error('Error searching photos:', error)
+        setSearchResults([])
+        setIsSearching(false)
+      }
     }, 800) // 0.8 second delay to simulate AI processing
   }
 
@@ -189,7 +199,7 @@ export default function HomePage() {
             {/* Home Content - Only visible when NOT in search mode */}
             {!isSearchMode && (
               <div className="transition-all duration-500">
-                <RecentPhotos onViewAll={() => handleNavigate("library")} onPhotoClick={handlePhotoClick} refreshTrigger={refreshTrigger} />
+                <RecentPhotos onViewAll={() => handleNavigate("library")} onPhotoClick={handlePhotoClick} />
                 <div className="max-w-7xl mx-auto px-8 py-12">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Albums</h2>
