@@ -1,6 +1,5 @@
 "use client"
 
-import { photoLibrary } from "@/lib/photo-data"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { ArrowRight } from "lucide-react"
@@ -31,13 +30,31 @@ function shuffleArrayWithSeed<T>(array: T[], seed: number): T[] {
 
 export function RecentPhotos({ onViewAll, onPhotoClick }: RecentPhotosProps) {
   // Use a fixed seed for consistent shuffle on server and client
-  const [randomPhotos, setRandomPhotos] = useState<typeof photoLibrary>([])
+  const [randomPhotos, setRandomPhotos] = useState<Photo[]>([])
   const [animatedPhotos, setAnimatedPhotos] = useState<Set<number>>(new Set())
+  const [isLoading, setIsLoading] = useState(true)
   
   useEffect(() => {
-    // Only set random photos on client side after mount
-    const seed = 12345 // Fixed seed for consistency
-    setRandomPhotos(shuffleArrayWithSeed(photoLibrary, seed).slice(0, 13))
+    // Fetch photos from API
+    async function fetchPhotos() {
+      try {
+        setIsLoading(true)
+        const response = await fetch('/api/photos')
+        const data = await response.json()
+        const photos: Photo[] = data.photos || []
+        
+        // Only set random photos on client side after mount
+        const seed = 12345 // Fixed seed for consistency
+        setRandomPhotos(shuffleArrayWithSeed(photos, seed).slice(0, 13))
+      } catch (error) {
+        console.error('Error fetching photos:', error)
+        setRandomPhotos([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchPhotos()
   }, [])
 
   useEffect(() => {
@@ -50,9 +67,29 @@ export function RecentPhotos({ onViewAll, onPhotoClick }: RecentPhotosProps) {
     })
   }, [randomPhotos])
   
-  // Don't render until photos are loaded to prevent hydration mismatch
-  if (randomPhotos.length === 0) {
-    return null
+  // Show loading state or don't render until photos are loaded
+  if (isLoading || randomPhotos.length === 0) {
+    return (
+      <section className="max-w-7xl mx-auto px-8 pt-2 pb-0">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Random Photos
+          </h2>
+        </div>
+        <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 md:gap-3 auto-rows-[100px] md:auto-rows-[150px] lg:auto-rows-[200px]">
+          {Array.from({ length: 13 }).map((_, index) => (
+            <div
+              key={index}
+              className="bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"
+              style={{
+                gridColumn: `span 2`,
+                gridRow: `span 1`,
+              }}
+            />
+          ))}
+        </div>
+      </section>
+    )
   }
 
   return (

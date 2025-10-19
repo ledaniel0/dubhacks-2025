@@ -120,7 +120,8 @@ export function createSharedAlbum(data: {
   }
 }
 
-export const photoLibrary: Photo[] = [
+// Base photo library (static photos)
+export const basePhotoLibrary: Photo[] = [
   createPhoto({
     id: 1,
     name: "Tokyo Morning",
@@ -994,10 +995,13 @@ export const photoLibrary: Photo[] = [
   }),
 ]
 
+// Export the base photo library (client-safe)
+export const photoLibrary = basePhotoLibrary
+
 /**
  * PHOTO LIBRARY
  * Single source of truth for all photos in the app
- * Add new photos here using the createPhoto() helper
+ * Now includes both static photos and session-uploaded photos
  */
 export const albums: Album[] = [
   createAlbum({
@@ -1293,6 +1297,48 @@ export function addAlbum(title: string, description: string, photoIds: number[])
 }
 
 /**
+ * Adds a new photo to the library
+ * Returns the created photo
+ */
+export function addPhoto(photoData: {
+  name: string
+  url: string
+  date: string
+  location?: string
+  description?: string
+  tags?: string[]
+  width?: number
+  height?: number
+  fileSize?: string
+  aiDescription?: string
+  aiTags?: string[]
+  mood?: string
+  detectedFaces?: FaceDetection[]
+}): Photo {
+  const newId = Math.max(...photoLibrary.map(p => p.id), 0) + 1
+  const newPhoto = createPhoto({
+    id: newId,
+    name: photoData.name,
+    url: photoData.url,
+    date: photoData.date,
+    location: photoData.location,
+    description: photoData.description,
+    tags: photoData.tags,
+    width: photoData.width,
+    height: photoData.height,
+    fileSize: photoData.fileSize,
+    aiDescription: photoData.aiDescription,
+    aiTags: photoData.aiTags,
+    mood: photoData.mood,
+    detectedFaces: photoData.detectedFaces,
+  })
+
+  // Note: This function is kept for compatibility
+  // The actual photo addition happens via the upload API route
+  return newPhoto
+}
+
+/**
  * Adds a new shared album to the sharedAlbums array
  * Returns the created shared album
  */
@@ -1305,7 +1351,7 @@ export function addSharedAlbum(title: string, description: string, photoIds: num
     photoIds,
     sharedWith: 0, // Will be updated when invites are sent
   })
-  
+
   // In a real app, this would be persisted to a database
   // For now, we'll just return the album (it won't persist between sessions)
   return newSharedAlbum

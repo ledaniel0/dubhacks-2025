@@ -38,6 +38,8 @@ export default function HomePage() {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null)
   const [selectedPublicAlbum, setSelectedPublicAlbum] = useState<PublicAlbum | null>(null)
+  const [likedPhotos, setLikedPhotos] = useState<Set<number>>(new Set())
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleSearchQueryChange = (query: string) => {
     setSearchQuery(query)
@@ -51,19 +53,29 @@ export default function HomePage() {
     setSearchResults([])
     
     // Simulate AI search processing with delay (like ChatGPT)
-    setTimeout(() => {
-      // In production, this would call your AI API
-      // For now, filter photos based on query
-      const results = photoLibrary.filter(
-        (photo) =>
-          photo.name.toLowerCase().includes(query.toLowerCase()) ||
-          photo.location.toLowerCase().includes(query.toLowerCase()) ||
-          photo.tags.some((tag) => tag.toLowerCase().includes(query.toLowerCase())) ||
-          photo.description?.toLowerCase().includes(query.toLowerCase()),
-      )
-      
-      setSearchResults(results)
-      setIsSearching(false)
+    setTimeout(async () => {
+      try {
+        // Fetch photos from API
+        const response = await fetch('/api/photos')
+        const data = await response.json()
+        const photos: Photo[] = data.photos || []
+        
+        // Filter photos based on query
+        const results = photos.filter(
+          (photo) =>
+            photo.name.toLowerCase().includes(query.toLowerCase()) ||
+            photo.location.toLowerCase().includes(query.toLowerCase()) ||
+            photo.tags.some((tag) => tag.toLowerCase().includes(query.toLowerCase())) ||
+            photo.description?.toLowerCase().includes(query.toLowerCase()),
+        )
+        
+        setSearchResults(results)
+        setIsSearching(false)
+      } catch (error) {
+        console.error('Error searching photos:', error)
+        setSearchResults([])
+        setIsSearching(false)
+      }
     }, 800) // 0.8 second delay to simulate AI processing
   }
 
@@ -170,6 +182,18 @@ export default function HomePage() {
     console.log("Public album clicked:", album)
   }
 
+  const toggleLike = (id: number) => {
+    setLikedPhotos((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
+  }
+
   return (
     <div className="flex min-h-screen bg-background relative overflow-hidden">
       {/* Vibrant animated background mesh gradients */}
@@ -247,17 +271,22 @@ export default function HomePage() {
         {activeView === "explore" && <Explore onAlbumClick={handlePublicAlbumClick} />}
 
         {activeView === "library" && (
-          <Library 
+          <Library
             searchResults={isSearchMode ? searchResults : undefined}
             isSearchMode={isSearchMode}
             searchQuery={searchQuery}
             isLoading={isSearching}
             onPhotoClick={handlePhotoClick}
+            refreshTrigger={refreshTrigger}
           />
         )}
       </main>
 
-      <UploadModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} />
+      <UploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onPhotoUploaded={() => setRefreshTrigger(prev => prev + 1)}
+      />
 
       {/* Create Shared Album Dialog */}
       <Dialog open={isCreateSharedAlbumOpen} onOpenChange={handleCloseSharedAlbumDialog}>
@@ -380,7 +409,12 @@ export default function HomePage() {
 
       {/* Photo Detail Modal */}
       {selectedPhoto && (
-        <PhotoDetail photo={selectedPhoto} onClose={handleClosePhotoDetail} />
+        <PhotoDetail
+          photo={selectedPhoto}
+          onClose={handleClosePhotoDetail}
+          isLiked={likedPhotos.has(selectedPhoto.id)}
+          onToggleLike={toggleLike}
+        />
       )}
 
       {/* Album Detail Modal */}

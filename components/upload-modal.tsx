@@ -3,12 +3,13 @@
 import { Upload, ImageIcon, Cloud, Box, Folder, Image } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
 
 interface UploadModalProps {
   isOpen: boolean
   onClose: () => void
+  onPhotoUploaded?: () => void
 }
 
 type TabType = "upload" | "cloud" | "google-photos"
@@ -21,12 +22,25 @@ interface CloudService {
   description: string
 }
 
-export function UploadModal({ isOpen, onClose }: UploadModalProps) {
+export function UploadModal({ isOpen, onClose, onPhotoUploaded }: UploadModalProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [activeTab, setActiveTab] = useState<TabType>("upload")
   const [connectedServices, setConnectedServices] = useState<Set<string>>(new Set())
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set())
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({})
+  const [uploadedFiles, setUploadedFiles] = useState<string[]>([])
+
+  // Reset modal state when it opens
+  useEffect(() => {
+    if (isOpen) {
+      setUploadProgress({})
+      setUploadedFiles([])
+      setIsUploading(false)
+      setIsDragging(false)
+    }
+  }, [isOpen])
 
   const cloudServices: CloudService[] = [
     {
@@ -124,11 +138,10 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
     fileInputRef.current?.click()
   }
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
     if (files && files.length > 0) {
-      console.log("Selected files:", Array.from(files))
-      // TODO: Process selected files
+      await uploadFiles(Array.from(files))
     }
   }
 
@@ -142,15 +155,77 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
     setIsDragging(false)
   }
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-    
+
     const files = e.dataTransfer.files
     if (files && files.length > 0) {
-      console.log("Dropped files:", Array.from(files))
-      // TODO: Process dropped files
+      await uploadFiles(Array.from(files))
     }
+  }
+
+  const uploadFiles = async (files: File[]) => {
+    setIsUploading(true)
+    const newProgress: { [key: string]: number } = {}
+    const uploaded: string[] = []
+
+    for (const file of files) {
+      try {
+        // Initialize progress
+        newProgress[file.name] = 0
+        setUploadProgress({ ...newProgress })
+
+        // Create form data
+        const formData = new FormData()
+        formData.append("file", file)
+
+        // Simulate progress updates
+        const progressInterval = setInterval(() => {
+          newProgress[file.name] = Math.min(newProgress[file.name] + 10, 90)
+          setUploadProgress({ ...newProgress })
+        }, 200)
+
+        // Upload file
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        })
+
+        clearInterval(progressInterval)
+
+        if (!response.ok) {
+          const error = await response.json()
+          throw new Error(error.error || "Upload failed")
+        }
+
+        const result = await response.json()
+
+        // Complete progress
+        newProgress[file.name] = 100
+        setUploadProgress({ ...newProgress })
+        uploaded.push(file.name)
+
+        console.log("Upload successful:", result)
+      } catch (error) {
+        console.error("Error uploading file:", file.name, error)
+        newProgress[file.name] = -1 // Mark as failed
+        setUploadProgress({ ...newProgress })
+      }
+    }
+
+    setUploadedFiles(uploaded)
+    setIsUploading(false)
+
+    // Reset progress after a delay
+    setTimeout(() => {
+      setUploadProgress({})
+      if (uploaded.length > 0) {
+        // Trigger photo refresh and close modal
+        onPhotoUploaded?.()
+        onClose()
+      }
+    }, 1000)
   }
 
   return (
@@ -245,13 +320,14 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
                     <p className="text-sm text-muted-foreground">or click to browse</p>
                   </div>
 
-                  <Button 
-                    size="lg" 
+                  <Button
+                    size="lg"
                     className="bg-gradient-to-r from-primary to-accent text-primary-foreground active:scale-95 active:brightness-110"
                     onClick={handleFileSelect}
+                    disabled={isUploading}
                   >
                     <ImageIcon className="h-5 w-5 mr-2" />
-                    Choose Files
+                    {isUploading ? "Uploading..." : "Choose Files"}
                   </Button>
                 </div>
               </div>
@@ -266,8 +342,39 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
                 className="hidden"
               />
 
+              {/* Upload Progress */}
+              {Object.keys(uploadProgress).length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {Object.entries(uploadProgress).map(([filename, progress]) => (
+                    <div key={filename} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-foreground truncate max-w-xs">{filename}</span>
+                        <span className={cn(
+                          "font-medium",
+                          progress === 100 ? "text-green-500" : progress === -1 ? "text-red-500" : "text-primary"
+                        )}>
+                          {progress === 100 ? "✓ Complete" : progress === -1 ? "✗ Failed" : `${progress}%`}
+                        </span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                        <div
+                          className={cn(
+                            "h-full transition-all duration-300",
+                            progress === 100 ? "bg-green-500" : progress === -1 ? "bg-red-500" : "bg-primary"
+                          )}
+                          style={{ width: `${Math.max(0, progress)}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <p className="text-xs text-muted-foreground text-center mt-4">
-                Supported formats: JPG, PNG, HEIC. Max file size: 50MB
+                {isUploading
+                  ? "Uploading and analyzing your photos with AI..."
+                  : "Supported formats: JPG, PNG, HEIC. Max file size: 50MB"
+                }
               </p>
             </div>
           </div>

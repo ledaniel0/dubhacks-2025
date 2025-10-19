@@ -9,7 +9,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useState, useRef, useEffect, useMemo, useCallback } from "react"
-import { photoLibrary } from "@/lib/photo-data"
 import { PhotoCard } from "./photo-card"
 import type { Photo } from "@/lib/types"
 
@@ -25,22 +24,41 @@ const sortOptions = [
 ]
 
 interface LibraryProps {
-  searchResults?: typeof photoLibrary
+  searchResults?: Photo[]
   isSearchMode?: boolean
   searchQuery?: string
   isLoading?: boolean
   onPhotoClick?: (photo: Photo) => void
+  refreshTrigger?: number
 }
 
-export function Library({ searchResults, isSearchMode = false, searchQuery = "", isLoading = false, onPhotoClick }: LibraryProps = {}) {
-  const [likedPhotos, setLikedPhotos] = useState<Set<number>>(
-    new Set(photoLibrary.filter((p) => p.liked).map((p) => p.id)),
-  )
+export function Library({ searchResults, isSearchMode = false, searchQuery = "", isLoading = false, onPhotoClick, refreshTrigger }: LibraryProps = {}) {
+  const [photoLibrary, setPhotoLibrary] = useState<Photo[]>([])
+  const [likedPhotos, setLikedPhotos] = useState<Set<number>>(new Set())
   const [sortBy, setSortBy] = useState<SortOption>("date-desc")
   const [displayCount, setDisplayCount] = useState(20)
+  const [isLoadingPhotos, setIsLoadingPhotos] = useState(true)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Fetch photos from API on mount and when refreshTrigger changes
+  useEffect(() => {
+    async function fetchPhotos() {
+      try {
+        setIsLoadingPhotos(true)
+        const response = await fetch('/api/photos')
+        const data = await response.json()
+        setPhotoLibrary(data.photos)
+        setLikedPhotos(new Set(data.photos.filter((p: Photo) => p.liked).map((p: Photo) => p.id)))
+        setIsLoadingPhotos(false)
+      } catch (error) {
+        console.error('Error fetching photos:', error)
+        setIsLoadingPhotos(false)
+      }
+    }
+    fetchPhotos()
+  }, [refreshTrigger])
 
   const toggleLike = useCallback((id: number) => {
     setLikedPhotos((prev) => {
