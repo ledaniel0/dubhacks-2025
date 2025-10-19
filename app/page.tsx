@@ -25,6 +25,8 @@ export default function HomePage() {
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<Photo[]>([])
+  const [initialSearchQuery, setInitialSearchQuery] = useState("")
+  const [refineQuery, setRefineQuery] = useState("")
   const [isCreateSharedAlbumOpen, setIsCreateSharedAlbumOpen] = useState(false)
   const [sharedAlbumTitle, setSharedAlbumTitle] = useState("")
   const [sharedAlbumDescription, setSharedAlbumDescription] = useState("")
@@ -41,9 +43,19 @@ export default function HomePage() {
   const handleSearch = (query: string) => {
     if (!query.trim()) return
     
+    // If already in search mode and have results, treat as refine
+    if (isSearchMode && searchResults.length > 0) {
+      setRefineQuery(query)
+      setSearchQuery(query)
+      return
+    }
+    
+    // Otherwise, do a new search
     setIsSearchMode(true)
     setIsSearching(true)
     setSearchResults([])
+    setInitialSearchQuery(query)
+    setRefineQuery("")
     
     // Simulate AI search processing with delay (like ChatGPT)
     setTimeout(() => {
@@ -67,6 +79,8 @@ export default function HomePage() {
     setIsSearching(false)
     setSearchQuery("")
     setSearchResults([])
+    setInitialSearchQuery("")
+    setRefineQuery("")
   }
 
   const handleAlbumCreated = (title: string, description: string, photoIds: number[]) => {
@@ -197,7 +211,8 @@ export default function HomePage() {
             {isSearchMode && (
                   <PhotoBatch
                     photos={searchResults}
-                    searchQuery={searchQuery}
+                    searchQuery={initialSearchQuery || searchQuery}
+                    refineQuery={refineQuery}
                     isLoading={isSearching}
                     onClearSearch={handleClearSearch}
                     onAlbumCreated={handleAlbumCreated}

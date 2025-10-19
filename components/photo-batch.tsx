@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Calendar, MapPin, Check, FolderPlus, CheckSquare, Square, X, Sparkles } from "lucide-react"
+import { Calendar, MapPin, Check, FolderPlus, CheckSquare, Square, X, Sparkles, Search } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,6 +12,7 @@ import type { Photo } from "@/lib/types"
 interface PhotoBatchProps {
   photos: Photo[]
   searchQuery: string
+  refineQuery?: string
   isLoading?: boolean
   onClearSearch: () => void
   onAlbumCreated?: (title: string, description: string, photoIds: number[]) => void
@@ -23,7 +24,7 @@ interface PhotoBatchProps {
   }
 }
 
-export function PhotoBatch({ photos, searchQuery, isLoading = false, onClearSearch, onAlbumCreated, onPhotoClick, sharedAlbumContext }: PhotoBatchProps) {
+export function PhotoBatch({ photos, searchQuery, refineQuery = "", isLoading = false, onClearSearch, onAlbumCreated, onPhotoClick, sharedAlbumContext }: PhotoBatchProps) {
   const [animatedPhotos, setAnimatedPhotos] = useState<Set<number>>(new Set())
   const [hoveredPhoto, setHoveredPhoto] = useState<number | null>(null)
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null)
@@ -80,7 +81,43 @@ export function PhotoBatch({ photos, searchQuery, isLoading = false, onClearSear
   }
 
   const handleSelectAll = () => {
-    setSelectedPhotoIds(photos.map((photo) => photo.id))
+    // Hardcoded list of Long's photos
+    const longPhotos = [
+      '20230806_181910.jpg',
+      '20230807_174057.jpg',
+      '20230809_143015.jpg',
+      'image0.jpg',
+      'IMG_4289.jpg',
+      'IMG_4395.jpg',
+      'longgrasshopper.jpg'
+    ]
+
+    // Apply the same filter logic to get currently visible photos
+    const visiblePhotos = refineQuery.trim()
+      ? photos.filter((photo) => {
+          const isSelected = selectedPhotoIds.includes(photo.id)
+          if (isSelected) return true
+          
+          const query = refineQuery.toLowerCase()
+          
+          if (query.includes('grasshopper')) {
+            const filename = photo.url.split('/').pop() || ''
+            return filename === 'longgrasshopper.jpg'
+          }
+          
+          if (query.includes('long')) {
+            const filename = photo.url.split('/').pop() || ''
+            return longPhotos.includes(filename)
+          }
+          
+          return photo.name.toLowerCase().includes(query) ||
+            photo.location.toLowerCase().includes(query) ||
+            photo.tags.some((tag) => tag.toLowerCase().includes(query)) ||
+            photo.description?.toLowerCase().includes(query)
+        })
+      : photos
+    
+    setSelectedPhotoIds(visiblePhotos.map((photo) => photo.id))
   }
 
   const handleDeselectAll = () => {
@@ -129,8 +166,59 @@ export function PhotoBatch({ photos, searchQuery, isLoading = false, onClearSear
     }
   }
 
-  const selectedPhotos = photos.filter((photo) => selectedPhotoIds.includes(photo.id))
-  const allSelected = selectedPhotoIds.length === photos.length && photos.length > 0
+  // Hardcoded list of Long's photos (filenames in /japan/long/ folder)
+  const longPhotos = [
+    '20230806_181910.jpg',
+    '20230807_174057.jpg',
+    '20230809_143015.jpg',
+    'image0.jpg',
+    'IMG_4289.jpg',
+    'IMG_4395.jpg',
+    'longgrasshopper.jpg'
+  ]
+
+  // Filter photos with special handling for selected photos
+  const filteredPhotos = refineQuery.trim()
+    ? photos.filter((photo) => {
+        const isSelected = selectedPhotoIds.includes(photo.id)
+        // Selected photos always remain visible
+        if (isSelected) return true
+        
+        const query = refineQuery.toLowerCase()
+        
+        // Hardcoded: Check if "Grasshopper" is in the query
+        if (query.includes('grasshopper')) {
+          const filename = photo.url.split('/').pop() || ''
+          return filename === 'longgrasshopper.jpg'
+        }
+        
+        // Hardcoded: Check if "Long" is in the query, filter by filename
+        if (query.includes('long')) {
+          const filename = photo.url.split('/').pop() || ''
+          return longPhotos.includes(filename)
+        }
+        
+        // For other queries, use normal search
+        return photo.name.toLowerCase().includes(query) ||
+          photo.location.toLowerCase().includes(query) ||
+          photo.tags.some((tag) => tag.toLowerCase().includes(query)) ||
+          photo.description?.toLowerCase().includes(query)
+      })
+    : photos
+
+  // Sort: Selected photos first ONLY when refine query is active
+  const sortedFilteredPhotos = refineQuery.trim()
+    ? [...filteredPhotos].sort((a, b) => {
+        const aSelected = selectedPhotoIds.includes(a.id)
+        const bSelected = selectedPhotoIds.includes(b.id)
+        if (aSelected && !bSelected) return -1
+        if (!aSelected && bSelected) return 1
+        return 0
+      })
+    : filteredPhotos
+
+  const selectedPhotos = sortedFilteredPhotos.filter((photo) => selectedPhotoIds.includes(photo.id))
+  const allSelected = selectedPhotoIds.length === sortedFilteredPhotos.length && sortedFilteredPhotos.length > 0
 
   // Loading state - show AI processing animation
   if (isLoading) {
@@ -212,15 +300,15 @@ export function PhotoBatch({ photos, searchQuery, isLoading = false, onClearSear
       <div className="max-w-7xl mx-auto px-8 py-8 pb-32">
         <div className="mb-6">
           <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
-            Found {photos.length} {photos.length === 1 ? "Photo" : "Photos"}
+            {refineQuery.trim() ? `Showing ${sortedFilteredPhotos.length} of ${photos.length}` : `Found ${photos.length}`} {photos.length === 1 ? "Photo" : "Photos"}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Results for "{searchQuery}" • Select photos to create an album
+            Results for "{searchQuery}"{refineQuery.trim() ? ` refined by "${refineQuery}"` : ""} • Select photos to create an album
           </p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {photos.map((photo, index) => {
+          {sortedFilteredPhotos.map((photo, index) => {
             const selected = isSelected(photo.id)
             const hovered = hoveredPhoto === photo.id
             const animated = animatedPhotos.has(photo.id)
