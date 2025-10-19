@@ -9,6 +9,7 @@ import { Library } from "@/components/library"
 import { UploadModal } from "@/components/upload-modal"
 import { RecentPhotos } from "@/components/recent-photos"
 import { photoLibrary } from "@/lib/photo-data"
+import { searchPhotosWithAI } from "@/lib/search-service"
 import { useState } from "react"
 import type { Photo } from "@/lib/types"
 
@@ -18,22 +19,31 @@ export default function HomePage() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [searchResults, setSearchResults] = useState<Photo[]>([])
+  const [isSearching, setIsSearching] = useState(false)
 
-  const handleSearch = (query: string) => {
+  const handleSearch = async (query: string) => {
+    if (!query || query.trim() === "") {
+      setIsSearchMode(false)
+      setSearchResults([])
+      return
+    }
+
+    console.log("🔎 Search initiated for:", query)
     setSearchQuery(query)
     setIsSearchMode(true)
-    
-    // Simulate AI search - in production, this would call your AI API
-    // For now, filter photos based on query
-    const results = photoLibrary.filter(
-      (photo) =>
-        photo.name.toLowerCase().includes(query.toLowerCase()) ||
-        photo.location.toLowerCase().includes(query.toLowerCase()) ||
-        photo.tags.some((tag) => tag.toLowerCase().includes(query.toLowerCase())) ||
-        photo.description?.toLowerCase().includes(query.toLowerCase()),
-    )
-    
-    setSearchResults(results)
+    setIsSearching(true)
+
+    try {
+      // Use AI-powered search with Gemini semantic understanding
+      const results = await searchPhotosWithAI(photoLibrary, query)
+      console.log("📸 Search results:", results.length, "photos")
+      setSearchResults(results)
+    } catch (error) {
+      console.error("Search error:", error)
+      setSearchResults([])
+    } finally {
+      setIsSearching(false)
+    }
   }
 
   const handleClearSearch = () => {
@@ -85,12 +95,21 @@ export default function HomePage() {
 
             {/* Search Results Batch - Only visible in search mode */}
             {isSearchMode && (
-              <PhotoBatch
-                photos={searchResults}
-                searchQuery={searchQuery}
-                onClearSearch={handleClearSearch}
-                onAlbumCreated={handleAlbumCreated}
-              />
+              <div>
+                {isSearching && (
+                  <div className="max-w-7xl mx-auto px-8 py-12 text-center">
+                    <p className="text-muted-foreground">Searching with AI...</p>
+                  </div>
+                )}
+                {!isSearching && (
+                  <PhotoBatch
+                    photos={searchResults}
+                    searchQuery={searchQuery}
+                    onClearSearch={handleClearSearch}
+                    onAlbumCreated={handleAlbumCreated}
+                  />
+                )}
+              </div>
             )}
           </div>
         )}
