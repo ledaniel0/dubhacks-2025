@@ -37,31 +37,30 @@ export function RecentPhotos({ onViewAll }: RecentPhotosProps) {
           <ArrowRight className="h-5 w-5 ml-2" />
         </Button>
       </div>
-      <div className="grid grid-cols-12 gap-3 auto-rows-[200px]">
+      <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 md:gap-3 auto-rows-[100px] md:auto-rows-[150px] lg:auto-rows-[200px]">
         {recentPhotos.map((photo, index) => {
           const isAnimated = animatedPhotos.has(photo.id)
 
-          // Define photo sizes and positions to perfectly fill 12 cols × 4 rows
-          // Row 1: 2-col + 2-col + 4-col = 8 cols
-          // Row 2: 4-col (tall) + 3-col + 3-col + (4-col continues from row 1-2) = 12 cols
-          // Row 3: (4-col continues) + 3-col + 2-col + 2-col = 11 cols
+          // Responsive layout: scales from 6 cols (mobile) -> 8 cols (tablet) -> 12 cols (desktop)
+          // Photos maintain proportional sizes across breakpoints
 
           let colSpan = 2
           let rowSpan = 1
 
-          if (index === 0) { colSpan = 2; rowSpan = 1 }       // Row 1, cols 1-2
-          else if (index === 1) { colSpan = 2; rowSpan = 1 }  // Row 1, cols 3-4
-          else if (index === 2) { colSpan = 4; rowSpan = 2 }  // Row 1-2, cols 5-8
-          else if (index === 3) { colSpan = 4; rowSpan = 2 }  // Row 1-2, cols 9-12
-          else if (index === 4) { colSpan = 4; rowSpan = 2 }  // Row 2-3, cols 1-4 (MOVED DOWN)
-          else if (index === 5) { colSpan = 3; rowSpan = 1 }  // Row 2, cols 9-11
-          else if (index === 6) { colSpan = 3; rowSpan = 1 }  // Row 3, cols 5-7
-          else if (index === 7) { colSpan = 2; rowSpan = 1 }  // Row 3, cols 8-9
-          else if (index === 8) { colSpan = 2; rowSpan = 1 }  // Row 3, cols 10-11
-          else if (index === 9) { colSpan = 2; rowSpan = 1 }  // Row 4, cols 1-2
-          else if (index === 10) { colSpan = 3; rowSpan = 1 } // Row 4, cols 3-5
-          else if (index === 11) { colSpan = 2; rowSpan = 1 } // Row 4, cols 6-7
-          else if (index === 12) { colSpan = 3; rowSpan = 1 } // Row 4, cols 8-10 (new photo, width 3)
+          // Mobile: 6 cols, Tablet: 8 cols, Desktop: 12 cols
+          if (index === 0) { colSpan = 2; rowSpan = 1 }       // Small
+          else if (index === 1) { colSpan = 2; rowSpan = 1 }  // Small
+          else if (index === 2) { colSpan = 4; rowSpan = 2 }  // Large
+          else if (index === 3) { colSpan = 4; rowSpan = 2 }  // Large
+          else if (index === 4) { colSpan = 4; rowSpan = 2 }  // Large (moved down)
+          else if (index === 5) { colSpan = 3; rowSpan = 1 }  // Medium
+          else if (index === 6) { colSpan = 3; rowSpan = 1 }  // Medium
+          else if (index === 7) { colSpan = 2; rowSpan = 1 }  // Small
+          else if (index === 8) { colSpan = 2; rowSpan = 1 }  // Small
+          else if (index === 9) { colSpan = 2; rowSpan = 1 }  // Small
+          else if (index === 10) { colSpan = 3; rowSpan = 1 } // Medium
+          else if (index === 11) { colSpan = 2; rowSpan = 1 } // Small
+          else if (index === 12) { colSpan = 3; rowSpan = 1 } // Medium
           else { colSpan = 2; rowSpan = 1 }
 
           return (
