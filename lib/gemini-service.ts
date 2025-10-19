@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai"
+import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai"
 import type { FaceDetection } from "./types"
 
 export interface PhotoAnalysis {
@@ -8,9 +8,21 @@ export interface PhotoAnalysis {
   detectedFaces: FaceDetection[]
 }
 
+interface GeminiFace {
+  position: string
+  attributes: string
+}
+
+interface GeminiAnalysis {
+  description: string
+  tags: string[]
+  mood: string
+  faces: GeminiFace[]
+}
+
 class GeminiService {
   private genAI: GoogleGenerativeAI | null = null
-  private model: any = null
+  private model: GenerativeModel | null = null
 
   constructor() {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
@@ -62,10 +74,10 @@ If no faces are detected, return an empty array for faces.`
         throw new Error("Failed to parse Gemini response")
       }
 
-      const analysis = JSON.parse(jsonMatch[0])
+      const analysis: GeminiAnalysis = JSON.parse(jsonMatch[0])
 
       // Convert face descriptions to FaceDetection objects
-      const detectedFaces: FaceDetection[] = (analysis.faces || []).map((face: any, index: number) => ({
+      const detectedFaces: FaceDetection[] = (analysis.faces || []).map((face: GeminiFace, index: number) => ({
         id: `face-${Date.now()}-${index}`,
         boundingBox: undefined, // We'll add precise bounding boxes when we integrate Google Vision
         confidence: 0.85, // Approximate confidence for Gemini-detected faces
@@ -83,7 +95,7 @@ If no faces are detected, return an empty array for faces.`
     }
   }
 
-  private async fileToGenerativePart(file: File): Promise<any> {
+  private async fileToGenerativePart(file: File): Promise<{ inlineData: { data: string; mimeType: string } }> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onloadend = () => {

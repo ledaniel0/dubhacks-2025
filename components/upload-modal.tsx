@@ -1,6 +1,6 @@
 "use client"
 
-import { Upload, ImageIcon, Cloud, HardDrive, Box, Folder, Image } from "lucide-react"
+import { Upload, ImageIcon, Cloud, Box, Folder, Image } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useState, useRef } from "react"
@@ -346,7 +346,7 @@ export function UploadModal({ isOpen, onClose }: UploadModalProps) {
                           : "border-border hover:border-primary/50"
                       )}
                     >
-                      <img src={photo} alt="Google Photo" className="w-full h-full object-cover" />
+                      <img src={photo} alt="Uploaded photo preview" className="w-full h-full object-cover" />
                       {isSelected && (
                         <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
                           <div className="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">

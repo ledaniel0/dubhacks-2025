@@ -1,4 +1,4 @@
-import type { Photo, Album, SharedAlbum } from "./types"
+import type { Photo, Album, SharedAlbum, FaceDetection } from "./types"
 
 /**
  * DEVELOPER GUIDE: Adding New Photos
@@ -42,7 +42,7 @@ export function createPhoto(data: {
   aiDescription?: string
   aiTags?: string[]
   mood?: string
-  detectedFaces?: any[]
+  detectedFaces?: FaceDetection[]
 }): Photo {
   return {
     id: data.id,
