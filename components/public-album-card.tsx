@@ -10,10 +10,11 @@ import { getPublicAlbumCoverPhoto } from "@/lib/photo-data"
 interface PublicAlbumCardProps {
   album: PublicAlbum
   onClick: () => void
+  onViewAlbum?: (album: PublicAlbum) => void
   variant?: "grid" | "compact"
 }
 
-export function PublicAlbumCard({ album, onClick, variant = "grid" }: PublicAlbumCardProps) {
+export function PublicAlbumCard({ album, onClick, onViewAlbum, variant = "grid" }: PublicAlbumCardProps) {
   const isEmpty = album.photoCount === 0
   const coverPhoto = !isEmpty && album.photoIds.length > 0 ? getPublicAlbumCoverPhoto(album.photoIds[0]) : null
 
@@ -154,8 +155,7 @@ export function PublicAlbumCard({ album, onClick, variant = "grid" }: PublicAlbu
             className="flex-1 transition-all duration-300"
             onClick={(e) => {
               e.stopPropagation()
-              // Handle view album action
-              console.log("View album:", album.title)
+              onViewAlbum?.(album)
             }}
           >
             <Eye className="h-4 w-4 mr-2" />

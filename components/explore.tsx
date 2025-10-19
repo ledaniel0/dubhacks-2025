@@ -1,21 +1,25 @@
 "use client"
 
 import { useState, useRef, useEffect, useMemo } from "react"
-import { Compass, Search, MapPin, Sparkles } from "lucide-react"
+import { Search, MapPin, Sparkles, Send } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { PublicAlbumCard } from "./public-album-card"
+import { AlbumDetail } from "./album-detail"
 import { publicAlbums } from "@/lib/photo-data"
-import type { PublicAlbum, Photo } from "@/lib/types"
+import type { PublicAlbum, Photo, Album } from "@/lib/types"
 
 interface ExploreProps {
   onAlbumClick?: (album: PublicAlbum) => void
+  onModalStateChange?: (isModalActive: boolean) => void
 }
 
-export function Explore({ onAlbumClick }: ExploreProps) {
+export function Explore({ onAlbumClick, onModalStateChange }: ExploreProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [displayCount, setDisplayCount] = useState(12)
   const [recentPhotos, setRecentPhotos] = useState<Photo[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedPublicAlbum, setSelectedPublicAlbum] = useState<PublicAlbum | null>(null)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
@@ -142,15 +146,36 @@ export function Explore({ onAlbumClick }: ExploreProps) {
     setDisplayCount(12)
   }, [searchQuery])
 
+  const handleViewAlbum = (album: PublicAlbum) => {
+    setSelectedPublicAlbum(album)
+    onModalStateChange?.(true)
+  }
+
+  const handleCloseAlbum = () => {
+    setSelectedPublicAlbum(null)
+    onModalStateChange?.(false)
+  }
+
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (selectedPublicAlbum) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [selectedPublicAlbum])
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-              <Compass className="h-6 w-6 text-primary" />
-            </div>
+          <div className="mb-3">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Explore Public Albums
             </h1>
@@ -162,14 +187,26 @@ export function Explore({ onAlbumClick }: ExploreProps) {
 
         {/* Search */}
         <div className="relative mb-8 max-w-2xl">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search by event, place, or tags..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 h-12 text-base bg-card/50 backdrop-blur-sm border-border/50 focus:border-primary/50"
-          />
+          <div className="relative flex items-center rounded-2xl shadow-sm">
+            <div className="relative flex items-center w-full bg-card rounded-2xl">
+              <div className="absolute left-4 flex items-center gap-2">
+                <Search className="h-4 w-4 text-muted-foreground transition-colors duration-200" />
+              </div>
+              <Input
+                type="text"
+                placeholder="Search by event, place, or tags..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-12 text-sm bg-transparent border-0 text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 transition-all duration-300 pl-12 pr-16"
+              />
+              <Button
+                size="icon"
+                className="absolute right-2 h-8 w-8 bg-gradient-to-r from-primary to-accent text-primary-foreground hover:shadow-glow hover:scale-105 transition-all duration-300"
+              >
+                <Send className="h-4 w-4 rotate-45 -translate-x-[1px]" />
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Stats Bar */}
@@ -212,6 +249,7 @@ export function Explore({ onAlbumClick }: ExploreProps) {
                 key={album.id}
                 album={album}
                 onClick={() => onAlbumClick?.(album)}
+                onViewAlbum={handleViewAlbum}
               />
             ))}
           </div>
@@ -235,6 +273,25 @@ export function Explore({ onAlbumClick }: ExploreProps) {
               Try searching with different keywords or browse all available public albums
             </p>
           </div>
+        )}
+
+        {/* Public Album Modal */}
+        {selectedPublicAlbum && (
+          <AlbumDetail
+            album={{
+              id: selectedPublicAlbum.id,
+              title: selectedPublicAlbum.title,
+              description: selectedPublicAlbum.description,
+              photoIds: selectedPublicAlbum.photoIds,
+              createdAt: selectedPublicAlbum.createdAt,
+              updatedAt: selectedPublicAlbum.lastContributed,
+              owner: "Community",
+              isPublic: true,
+              tags: selectedPublicAlbum.tags,
+              location: selectedPublicAlbum.location
+            }}
+            onClose={handleCloseAlbum}
+          />
         )}
       </div>
     </div>

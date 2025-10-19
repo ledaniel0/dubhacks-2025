@@ -43,6 +43,8 @@ export default function HomePage() {
   const [selectedPublicAlbum, setSelectedPublicAlbum] = useState<PublicAlbum | null>(null)
   const [likedPhotos, setLikedPhotos] = useState<Set<number>>(new Set())
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isModalActive, setIsModalActive] = useState(false)
 
   const handleSearchQueryChange = (query: string) => {
     setSearchQuery(query)
@@ -176,16 +178,19 @@ export default function HomePage() {
 
   const handlePhotoClick = (photo: Photo) => {
     setSelectedPhoto(photo)
+    setIsModalActive(true)
   }
 
   const handleClosePhotoDetail = () => {
     setSelectedPhoto(null)
+    setIsModalActive(false)
   }
 
   const handleAlbumClick = (albumId: number) => {
     const album = albums.find(a => a.id === albumId)
     if (album) {
       setSelectedAlbum(album)
+      setIsModalActive(true)
     }
   }
 
@@ -193,6 +198,7 @@ export default function HomePage() {
     setSelectedAlbum(null)
     // Clear any selected photo to prevent photo modal from opening
     setSelectedPhoto(null)
+    setIsModalActive(false)
   }
 
   const handlePublicAlbumClick = (album: PublicAlbum) => {
@@ -223,7 +229,12 @@ export default function HomePage() {
         <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-gradient-to-br from-[#F7931E]/15 to-[#FF6B35]/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "3s" }} />
       </div>
 
-      <Sidebar activeView={activeView} onNavigate={handleNavigate} />
+      <Sidebar 
+        activeView={activeView} 
+        onNavigate={handleNavigate} 
+        onCollapseChange={setIsSidebarCollapsed}
+        isModalActive={isModalActive}
+      />
       {(activeView === "home" || activeView === "search-results" || activeView === "library") && (
         <TopHeader
           onUploadClick={() => setIsUploadModalOpen(true)}
@@ -231,10 +242,16 @@ export default function HomePage() {
           onSearchQueryChange={handleSearchQueryChange}
           showSearch={activeView === "home" || activeView === "search-results" || activeView === "library"}
           searchQuery={searchQuery}
+          isSidebarCollapsed={isSidebarCollapsed}
+          isModalActive={isModalActive}
         />
       )}
 
-      <main className={`flex-1 ml-64 relative z-10 ${activeView === "home" || activeView === "search-results" || activeView === "library" ? "pt-20" : ""}`}>
+      <main className={cn(
+        "flex-1 relative z-10 transition-all duration-500 ease-in-out",
+        isModalActive ? "ml-0" : isSidebarCollapsed ? "ml-16" : "ml-64",
+        activeView === "home" || activeView === "search-results" || activeView === "library" ? "pt-20" : ""
+      )}>
         {activeView === "home" && (
           <div className="relative">
             {/* Home Content - Only visible when NOT in search mode */}
@@ -290,7 +307,7 @@ export default function HomePage() {
 
         {activeView === "shared" && <SharedAlbums onAlbumClick={(id) => console.log("Shared album clicked:", id)} onCreateSharedAlbum={() => setIsCreateSharedAlbumOpen(true)} />}
 
-        {activeView === "explore" && <Explore onAlbumClick={handlePublicAlbumClick} />}
+        {activeView === "explore" && <Explore onAlbumClick={handlePublicAlbumClick} onModalStateChange={setIsModalActive} />}
 
         {activeView === "library" && (
           <Library
@@ -450,6 +467,7 @@ export default function HomePage() {
               const photo = photoLibrary.find(p => p.id === photoId)
               if (photo && selectedAlbum) { // Only open if album is still selected
                 setSelectedPhoto(photo)
+                setIsModalActive(true)
               }
             }, 100)
           }}

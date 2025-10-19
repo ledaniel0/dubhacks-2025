@@ -202,10 +202,10 @@ export function PhotoDetail({ photo, onClose, isLiked = false, onToggleLike }: P
               </div>
 
               {/* Photo Actions - at bottom */}
-              <div className="flex items-center justify-center gap-4 pt-6 border-t border-border/50">
+              <div className="flex items-center justify-start gap-4 pt-6 border-t border-border/50">
                 <Button variant="outline" className="flex items-center gap-2" onClick={handleLikeToggle}>
                   <Heart className={cn("h-4 w-4", liked ? "text-red-500 fill-red-500" : "")} />
-                  {liked ? "Liked" : "Like"}
+                  {liked ? "Favorited" : "Favorite"}
                 </Button>
                 <Button variant="outline" className="flex items-center gap-2" onClick={handleDownload}>
                   <Download className="h-4 w-4" />

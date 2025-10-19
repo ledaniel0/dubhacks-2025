@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import type { Album } from "@/lib/types"
-import { getPhotosByIds } from "@/lib/photo-data"
+import { getPhotosByIds, getPublicAlbumPhotos } from "@/lib/photo-data"
 import { useEffect } from "react"
 import Image from "next/image"
 
@@ -16,7 +16,7 @@ interface AlbumDetailProps {
 }
 
 export function AlbumDetail({ album, onClose, onPhotoClick }: AlbumDetailProps) {
-  const photos = getPhotosByIds(album.photoIds)
+  const photos = album.isPublic ? getPublicAlbumPhotos(album.photoIds) : getPhotosByIds(album.photoIds)
 
   useEffect(() => {
     // Disable scroll on mount
@@ -81,13 +81,13 @@ export function AlbumDetail({ album, onClose, onPhotoClick }: AlbumDetailProps) 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Photo Grid - Takes 2 columns on large screens */}
             <div className="lg:col-span-2">
-              {/* Masonry Grid of Photos */}
-              <div className="columns-2 md:columns-3 gap-4 space-y-4">
+              {/* Grid of Photos - 3 columns */}
+              <div className="grid grid-cols-3 gap-4">
                 {photos.map((photo) => (
                   <div
                     key={photo.id}
                     onClick={() => onPhotoClick?.(photo.id)}
-                    className="break-inside-avoid cursor-pointer group"
+                    className="cursor-pointer group"
                   >
                     <div className="relative overflow-hidden rounded-2xl bg-card border border-border/50 transition-all duration-300 hover:shadow-layered-hover hover:border-primary/30 hover:scale-[1.02]">
                       <div className="relative w-full" style={{ paddingBottom: `${(photo.height || 3000) / (photo.width || 4000) * 100}%` }}>

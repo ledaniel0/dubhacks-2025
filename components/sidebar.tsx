@@ -2,6 +2,7 @@
 
 import { Home, FolderOpen, Sparkles, Users, ImageIcon, User, Compass, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useState, useRef, useEffect } from "react"
 
 const navigation = [
   { name: "Home", icon: Home, id: "home" },
@@ -15,24 +16,74 @@ const navigation = [
 interface SidebarProps {
   activeView: string
   onNavigate: (view: string) => void
+  onCollapseChange?: (isCollapsed: boolean) => void
+  isModalActive?: boolean
 }
 
-export function Sidebar({ activeView, onNavigate }: SidebarProps) {
-  return (
-    <aside className="fixed left-0 top-0 h-screen w-64 border-r border-border/50 glass-effect z-50">
-      <div className="flex h-full flex-col">
-        <div className="flex h-16 items-center px-6 border-b border-border/50">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl animated-gradient flex items-center justify-center shadow-glow">
-              <Sparkles className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-[#FF6B35] via-[#E0338E] to-[#00B4D8] bg-clip-text text-transparent">
-              Echo
-            </span>
-          </div>
-        </div>
+export function Sidebar({ activeView, onNavigate, onCollapseChange, isModalActive = false }: SidebarProps) {
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  const sidebarRef = useRef<HTMLDivElement>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-        <nav className="flex-1 space-y-2 px-3 py-6">
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (sidebarRef.current) {
+        const rect = sidebarRef.current.getBoundingClientRect()
+        const isNearSidebar = e.clientX <= rect.right + 80 // Increased proximity for smoother detection
+        
+        // Clear existing timeout
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current)
+        }
+        
+        if (isNearSidebar) {
+          setIsHovered(true)
+        } else {
+          // Add delay before collapsing for smoother animation
+          timeoutRef.current = setTimeout(() => {
+            setIsHovered(false)
+          }, 150)
+        }
+      }
+    }
+
+    const handleMouseLeave = () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+      setIsHovered(false)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseleave', handleMouseLeave)
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseleave', handleMouseLeave)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    // Don't expand if modal is active
+    const shouldCollapse = !isHovered || isModalActive
+    setIsCollapsed(shouldCollapse)
+    onCollapseChange?.(shouldCollapse)
+  }, [isHovered, isModalActive, onCollapseChange])
+
+  return (
+    <aside 
+      ref={sidebarRef}
+      className={cn(
+        "fixed left-0 top-0 h-screen border-r border-border/50 glass-effect z-50 transition-all duration-500 ease-in-out",
+        isModalActive ? "hidden" : isCollapsed ? "w-16" : "w-64"
+      )}
+    >
+      <div className="flex h-full flex-col">
+        <nav className="flex-1 space-y-2 px-3 py-4">
           {navigation.map((item) => {
             const Icon = item.icon
             const isActive = activeView === item.id
@@ -41,40 +92,58 @@ export function Sidebar({ activeView, onNavigate }: SidebarProps) {
                 key={item.name}
                 onClick={() => onNavigate(item.id)}
                 className={cn(
-                  "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 group relative overflow-hidden",
+                  "flex w-full items-center rounded-xl py-3 text-sm font-semibold transition-all duration-500 ease-in-out group relative overflow-hidden",
                   isActive
                     ? "bg-gradient-to-r from-[#FF6B35]/20 via-[#E0338E]/20 to-[#9D4EDD]/20 text-sidebar-accent-foreground shadow-lg border-2 border-primary/40"
                     : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:shadow-md border-2 border-transparent hover:border-primary/20",
+                  isCollapsed ? "justify-center px-2" : "justify-start px-4"
                 )}
+                title={isCollapsed ? item.name : undefined}
               >
                 {/* Animated gradient background on hover */}
                 {!isActive && (
                   <div className="absolute inset-0 bg-gradient-to-r from-[#FF6B35]/10 via-[#00B4D8]/10 to-[#9D4EDD]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 )}
                 
-                <Icon className={cn(
-                  "h-5 w-5 relative z-10 transition-all duration-300",
-                  isActive ? "text-primary" : "group-hover:scale-110"
-                )} />
-                <span className="relative z-10">{item.name}</span>
+                {/* Icon - Fixed position */}
+                <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                  <Icon className={cn(
+                    "h-5 w-5 relative z-10 transition-all duration-300",
+                    isActive ? "text-primary" : "group-hover:scale-110"
+                  )} />
+                </div>
                 
-                {/* Active indicator */}
-                {isActive && (
-                  <div className="absolute right-3 h-2 w-2 rounded-full bg-gradient-to-r from-[#FF6B35] to-[#E0338E] animate-pulse" />
-                )}
+                {/* Text - Slides in from right */}
+                <div className={cn(
+                  "flex-1 min-w-0 transition-all duration-500 ease-in-out text-left",
+                  isCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100 ml-3"
+                )}>
+                  <span className="relative z-10 whitespace-nowrap text-left">{item.name}</span>
+                </div>
               </button>
             )
           })}
         </nav>
 
         <div className="border-t border-border/50 p-4">
-          <div className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-sidebar-accent/30 transition-all duration-300 cursor-pointer group">
-            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#FF6B35] via-[#E0338E] to-[#9D4EDD] flex items-center justify-center shadow-lg group-hover:shadow-glow transition-all duration-300 group-hover:scale-105">
-              <User className="h-6 w-6 text-white" />
+          <div className={cn(
+            "flex items-center py-3 rounded-xl hover:bg-sidebar-accent/30 transition-all duration-500 ease-in-out cursor-pointer group",
+            isCollapsed ? "justify-center px-2" : "justify-start px-3"
+          )}>
+            {/* Profile Picture - Fixed position */}
+            <div className="flex-shrink-0">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#FF6B35] via-[#E0338E] to-[#9D4EDD] flex items-center justify-center shadow-lg group-hover:shadow-glow transition-all duration-300 group-hover:scale-105 overflow-hidden">
+                <User className="h-5 w-5 text-white" />
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">You</p>
-              <p className="text-xs text-muted-foreground truncate">ledaniel@gmail.com</p>
+            
+            {/* User Info - Slides in from right */}
+            <div className={cn(
+              "flex-1 min-w-0 transition-all duration-500 ease-in-out text-left",
+              isCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100 ml-3"
+            )}>
+              <p className="text-sm font-medium text-foreground truncate text-left">You</p>
+              <p className="text-xs text-muted-foreground truncate text-left">ledaniel@gmail.com</p>
             </div>
           </div>
         </div>
