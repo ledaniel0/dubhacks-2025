@@ -44,7 +44,7 @@ export function Explore({ onAlbumClick }: ExploreProps) {
 
   // Suggest albums based on recent photos
   const suggestedAlbums = useMemo(() => {
-    if (recentPhotos.length === 0) return publicAlbums.slice(0, 3) // Show first 3 if no recent photos
+    if (recentPhotos.length === 0) return publicAlbums // Show all albums if no recent photos
     
     const suggestions: { album: PublicAlbum; score: number }[] = []
     
@@ -81,16 +81,22 @@ export function Explore({ onAlbumClick }: ExploreProps) {
       }
     })
     
-    // Sort by score and return top suggestions
-    return suggestions
+    // Sort by score and return top suggestions, or all albums if no suggestions
+    const sortedSuggestions = suggestions
       .sort((a, b) => b.score - a.score)
       .slice(0, 6)
       .map(item => item.album)
+    
+    // If no suggestions found, return all albums
+    return sortedSuggestions.length > 0 ? sortedSuggestions : publicAlbums
   }, [recentPhotos])
 
   // Filter albums based on search or show suggestions
   const filteredAlbums = useMemo(() => {
-    if (!searchQuery.trim()) return suggestedAlbums
+    if (!searchQuery.trim()) {
+      // Always show all public albums when no search query
+      return publicAlbums
+    }
 
     const query = searchQuery.toLowerCase()
     return publicAlbums.filter(
@@ -100,7 +106,7 @@ export function Explore({ onAlbumClick }: ExploreProps) {
         album.description.toLowerCase().includes(query) ||
         album.tags.some((tag) => tag.toLowerCase().includes(query))
     )
-  }, [searchQuery, suggestedAlbums])
+  }, [searchQuery])
 
   const displayedAlbums = useMemo(() =>
     filteredAlbums.slice(0, displayCount),

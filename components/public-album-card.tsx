@@ -1,6 +1,6 @@
 "use client"
 
-import { MapPin, Users, ImageIcon, Plus } from "lucide-react"
+import { MapPin, Users, ImageIcon, Plus, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -146,22 +146,37 @@ export function PublicAlbumCard({ album, onClick, variant = "grid" }: PublicAlbu
         {/* Spacer to push button to bottom */}
         <div className="flex-grow" />
 
-        {/* CTA Button */}
-        <Button
-          size="sm"
-          variant={isEmpty ? "default" : "outline"}
-          className={cn(
-            "w-full transition-all duration-300",
-            isEmpty && "animated-gradient text-primary-foreground pulse-glow"
-          )}
-          onClick={(e) => {
-            e.stopPropagation()
-            onClick()
-          }}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          {isEmpty ? "Be the First to Add Photos" : "Add Your Photos"}
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex-1 transition-all duration-300"
+            onClick={(e) => {
+              e.stopPropagation()
+              // Handle view album action
+              console.log("View album:", album.title)
+            }}
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            View Album
+          </Button>
+          <Button
+            size="sm"
+            variant={isEmpty ? "default" : "outline"}
+            className={cn(
+              "flex-1 transition-all duration-300",
+              isEmpty && "animated-gradient text-primary-foreground pulse-glow"
+            )}
+            onClick={(e) => {
+              e.stopPropagation()
+              onClick()
+            }}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {isEmpty ? "Add Photos" : "Add Photos"}
+          </Button>
+        </div>
       </div>
     </div>
   )
