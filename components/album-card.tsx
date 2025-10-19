@@ -9,7 +9,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import type { Album } from "@/lib/types"
@@ -114,16 +113,14 @@ export function AlbumCard({ album, onClick, isHovered, onHoverChange, variant = 
   }
 
   return (
-    <HoverCard openDelay={300}>
-      <HoverCardTrigger asChild>
-        <div
-          onMouseEnter={() => onHoverChange(true)}
-          onMouseLeave={() => onHoverChange(false)}
-          className={cn(
-            "group relative overflow-hidden rounded-2xl bg-card border border-border p-4 transition-all duration-300",
-            isHovered ? "scale-[1.02] shadow-xl border-primary/30" : "shadow-sm hover:shadow-lg",
-          )}
-        >
+    <div
+      onMouseEnter={() => onHoverChange(true)}
+      onMouseLeave={() => onHoverChange(false)}
+      className={cn(
+        "group relative overflow-hidden rounded-2xl bg-card border border-border p-4 transition-all duration-300",
+        isHovered ? "scale-[1.02] shadow-xl border-primary/30" : "shadow-sm hover:shadow-lg",
+      )}
+    >
           <button onClick={onClick} className="w-full text-left">
             <div className="grid grid-cols-2 gap-2 mb-4 aspect-square">
               {thumbnails.map((thumb, index) => (
@@ -171,15 +168,5 @@ export function AlbumCard({ album, onClick, isHovered, onHoverChange, variant = 
             </DropdownMenu>
           </div>
         </div>
-      </HoverCardTrigger>
-      <HoverCardContent side="right" className="w-80">
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold">{album.title}</h4>
-          {album.description && <p className="text-sm text-muted-foreground">{album.description}</p>}
-          <p className="text-sm text-muted-foreground">Created on {album.createdAt}</p>
-          <p className="text-xs text-muted-foreground">Last updated {album.updatedAt}</p>
-        </div>
-      </HoverCardContent>
-    </HoverCard>
   )
 }

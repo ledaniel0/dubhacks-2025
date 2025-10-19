@@ -139,7 +139,7 @@ export const basePhotoLibrary: Photo[] = [
     description: "Stunning sunset view over Tokyo Bay",
     date: "August 6, 2023",
     location: "Tokyo Bay, Japan",
-    tags: ["sunset", "tokyo", "bay", "nature", "peaceful"],
+    tags: ["sunset", "tokyo", "bay", "nature", "peaceful", "long"],
     liked: true,
   }),
   createPhoto({
@@ -159,7 +159,7 @@ export const basePhotoLibrary: Photo[] = [
     description: "Peaceful temple garden in Kyoto",
     date: "August 7, 2023",
     location: "Kyoto, Japan",
-    tags: ["temple", "garden", "kyoto", "peaceful", "nature"],
+    tags: ["temple", "garden", "kyoto", "peaceful", "nature", "long"],
     liked: true,
   }),
   createPhoto({
@@ -206,7 +206,7 @@ export const basePhotoLibrary: Photo[] = [
     description: "Exploring Tokyo neighborhoods",
     date: "August 10, 2023",
     location: "Tokyo, Japan",
-    tags: ["urban", "exploration", "tokyo", "travel"],
+    tags: ["urban", "exploration", "tokyo", "travel", "happiest"],
   }),
   createPhoto({
     id: 10,
@@ -292,7 +292,7 @@ export const basePhotoLibrary: Photo[] = [
     description: "Wide panoramic city view",
     date: "August 2023",
     location: "Tokyo, Japan",
-    tags: ["panorama", "tokyo", "cityscape", "view"],
+    tags: ["panorama", "tokyo", "cityscape", "view", "long"],
   }),
   createPhoto({
     id: 19,
@@ -311,7 +311,7 @@ export const basePhotoLibrary: Photo[] = [
     description: "Stunning mountain landscape",
     date: "August 2023",
     location: "Japan",
-    tags: ["mountain", "nature", "landscape", "peaceful"],
+    tags: ["mountain", "nature", "landscape", "peaceful", "long"],
     liked: true,
   }),
   createPhoto({
@@ -353,7 +353,7 @@ export const basePhotoLibrary: Photo[] = [
     description: "Working hard on our project",
     date: "October 18, 2025",
     location: "UW Campus, Seattle",
-    tags: ["dubhacks", "hackathon", "coding", "workspace", "tech"],
+    tags: ["dubhacks", "hackathon", "coding", "workspace", "tech", "happiest"],
   }),
   createPhoto({
     id: 25,
@@ -413,40 +413,10 @@ export const basePhotoLibrary: Photo[] = [
     description: "Celebrating internship achievements",
     date: "Summer 2025",
     location: "Salesforce Office, Seattle",
-    tags: ["salesforce", "internship", "milestone", "professional", "proudest"],
+    tags: ["salesforce", "internship", "milestone", "professional", "proudest", "happiest"],
     liked: true,
   }),
-  createPhoto({
-    id: 93,
-    name: "Salesforce Team Moment",
-    url: "/images/salesforce/IMG_4627.PNG",
-    description: "Team collaboration at Salesforce",
-    date: "Summer 2025",
-    location: "Salesforce Office, Seattle",
-    tags: ["salesforce", "internship", "team", "professional", "work"],
-    liked: true,
-  }),
-  createPhoto({
-    id: 94,
-    name: "Salesforce Innovation",
-    url: "/images/salesforce/IMG_7478.PNG",
-    description: "Innovation and creativity at Salesforce",
-    date: "Summer 2025",
-    location: "Salesforce Office, Seattle",
-    tags: ["salesforce", "internship", "innovation", "professional", "tech"],
-    liked: true,
-  }),
-  createPhoto({
-    id: 95,
-    name: "Salesforce Culture",
-    url: "/images/salesforce/IMG_7736.PNG",
-    description: "Experiencing Salesforce company culture",
-    date: "Summer 2025",
-    location: "Salesforce Office, Seattle",
-    tags: ["salesforce", "internship", "culture", "professional", "team"],
-    liked: true,
-  }),
-
+  
   // New York Photos
   createPhoto({
     id: 31,
@@ -1025,62 +995,22 @@ export const basePhotoLibrary: Photo[] = [
   }),
   createPhoto({
     id: 43,
-    name: "Long Praying Mantis",
+    name: "Long Grasshopper",
     url: "/images/japan/longgrasshopper.jpg",
-    description: "Interesting Praying Mantis in Japan",
+    description: "Interesting long grasshopper in Japan",
     date: "August 2023",
     location: "Japan",
     tags: ["nature", "japan", "wildlife", "insect", "long"],
     liked: false,
   }),
   createPhoto({
-    id: 111,
-    name: "Baby Vivi Smile",
-    url: "/images/Baby Vivi/20250728_153552.jpg",
-    description: "Sweet baby Vivi smiling",
-    date: "July 28, 2025",
-    location: "Home",
-    tags: ["baby", "vivi", "family", "cute", "baby vivi"],
-    liked: true,
-  }),
-  createPhoto({
-    id: 112,
-    name: "Baby Vivi Evening",
-    url: "/images/Baby Vivi/20250730_201850.jpg",
-    description: "Baby Vivi in the evening",
-    date: "July 30, 2025",
-    location: "Home",
-    tags: ["baby", "vivi", "family", "cute", "baby vivi", "evening"],
-    liked: true,
-  }),
-  createPhoto({
-    id: 113,
-    name: "Baby Vivi Portrait 1",
-    url: "/images/Baby Vivi/PXL_20250729_003437437.jpg",
-    description: "Adorable baby Vivi portrait",
-    date: "July 29, 2025",
-    location: "Home",
-    tags: ["baby", "vivi", "family", "portrait", "cute", "baby vivi"],
-    liked: true,
-  }),
-  createPhoto({
-    id: 114,
+    id: 44,
     name: "Baby Vivi Portrait 2",
     url: "/images/Baby Vivi/PXL_20250729_003438121.jpg",
-    description: "Sweet baby Vivi portrait",
+    description: "Adorable portrait of baby Vivi",
     date: "July 29, 2025",
     location: "Home",
-    tags: ["baby", "vivi", "family", "portrait", "cute", "baby vivi"],
-    liked: true,
-  }),
-  createPhoto({
-    id: 115,
-    name: "Baby Vivi Portrait 3",
-    url: "/images/Baby Vivi/PXL_20250729_003438676.jpg",
-    description: "Beautiful baby Vivi portrait",
-    date: "July 29, 2025",
-    location: "Home",
-    tags: ["baby", "vivi", "family", "portrait", "cute", "baby vivi"],
+    tags: ["baby", "family", "portrait", "cute", "happiest"],
     liked: true,
   }),
 ]
@@ -1268,7 +1198,7 @@ export const albums: Album[] = [
     id: 2,
     title: "Salesforce Internship",
     description: "Summer 2025 internship memories",
-    photoIds: [28, 29, 30, 93, 94, 95],
+    photoIds: [28, 29, 30],
     coverPhotoId: 29,
   }),
   createAlbum({
@@ -1305,13 +1235,6 @@ export const albums: Album[] = [
     description: "Exploring the beautiful city by the bay",
     photoIds: [80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91],
     coverPhotoId: 80,
-  }),
-  createAlbum({
-    id: 8,
-    title: "Baby Vivi",
-    description: "Precious moments with baby Vivi",
-    photoIds: [111, 112, 113, 114, 115],
-    coverPhotoId: 111,
   }),
 ]
 
@@ -1533,30 +1456,7 @@ export function addSharedAlbum(title: string, description: string, photoIds: num
     sharedWith: 0, // Will be updated when invites are sent
   })
 
-  // Add to the sharedAlbums array (will persist during the session)
-  sharedAlbums.push(newSharedAlbum)
-
+  // In a real app, this would be persisted to a database
+  // For now, we'll just return the album (it won't persist between sessions)
   return newSharedAlbum
-}
-
-/**
- * Adds photos to an existing shared album
- * Returns the updated shared album or null if not found
- */
-export function addPhotosToSharedAlbum(albumId: number, photoIds: number[]): SharedAlbum | null {
-  const album = sharedAlbums.find(a => a.id === albumId)
-  if (!album) {
-    return null
-  }
-
-  // Add new photo IDs, avoiding duplicates
-  const uniquePhotoIds = new Set([...album.photoIds, ...photoIds])
-  album.photoIds = Array.from(uniquePhotoIds)
-
-  // Update the cover photo if not set
-  if (!album.coverPhotoId && album.photoIds.length > 0) {
-    album.coverPhotoId = album.photoIds[0]
-  }
-
-  return album
 }

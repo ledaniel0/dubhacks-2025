@@ -2,7 +2,6 @@
 
 import { Sidebar } from "@/components/sidebar"
 import { TopHeader } from "@/components/top-header"
-import { PhotoBatch } from "@/components/photo-batch"
 import { AlbumsList } from "@/components/albums-list"
 import { SharedAlbums } from "@/components/shared-albums"
 import { Library } from "@/components/library"
@@ -17,7 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Share2, Sparkles, Download, FolderPlus, Upload } from "lucide-react"
-import { photoLibrary, addSharedAlbum, addPhotosToSharedAlbum, addAlbum, albums } from "@/lib/photo-data"
+import { photoLibrary, addSharedAlbum, addAlbum, albums } from "@/lib/photo-data"
 import { cn } from "@/lib/utils"
 import { useState, useEffect } from "react"
 import type { Photo, Album, PublicAlbum } from "@/lib/types"
@@ -25,6 +24,8 @@ import type { Photo, Album, PublicAlbum } from "@/lib/types"
 export default function HomePage() {
   const [activeView, setActiveView] = useState("home")
   const [searchQuery, setSearchQuery] = useState("")
+  const [committedSearchQuery, setCommittedSearchQuery] = useState("")
+  const [loadingSearchQuery, setLoadingSearchQuery] = useState("")
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [isSearchMode, setIsSearchMode] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
@@ -48,9 +49,18 @@ export default function HomePage() {
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedPhotos, setSelectedPhotos] = useState<Photo[]>([])
   const [clearSelectionTrigger, setClearSelectionTrigger] = useState(0)
+  const [animationResetTrigger, setAnimationResetTrigger] = useState(0)
+
+  // Trigger animation reset when returning to home view
+  useEffect(() => {
+    if (activeView === "home") {
+      setAnimationResetTrigger(prev => prev + 1)
+    }
+  }, [activeView])
 
   const handleSearchQueryChange = (query: string) => {
-    setSearchQuery(query)
+    setSearchQuery(query) // Update the input value for typing
+    // Don't update committedSearchQuery - that only happens on Enter
   }
 
   const handleSelectionChange = (photos: Photo[], isSelectionMode: boolean) => {
@@ -68,48 +78,16 @@ export default function HomePage() {
   const handleSearch = (query: string) => {
     if (!query.trim()) return
 
-    // Check if this is a refinement or new search
-    const isRefinement = isSearchMode && searchResults.length > 0
-
-    // Set states - for refinement update refineQuery, for new search update initialSearchQuery
-    setIsSearchMode(true)
+    // Set loading state and redirect to library page when searching
     setIsSearching(true)
-    setSearchQuery(query)
-
-    if (isRefinement) {
-      setRefineQuery(query)
-    } else {
-      setSearchResults([])
-      setInitialSearchQuery(query)
-      setRefineQuery("")
-    }
+    setIsSearchMode(true)
+    setActiveView("library")
+    setLoadingSearchQuery(query) // Set the query for loading display immediately
     
     // Simulate AI search processing with delay (like ChatGPT)
-    setTimeout(async () => {
-      try {
-        // Fetch photos from API
-        const response = await fetch('/api/photos')
-        const data = await response.json()
-        const photos: Photo[] = data.photos || []
-        
-        // Filter photos based on query - split query into words
-        const queryWords = query.toLowerCase().trim().split(/\s+/).filter(word => word.length > 0)
-        const results = photos.filter((photo) =>
-          queryWords.some((word) =>
-            photo.name.toLowerCase().includes(word) ||
-            photo.location.toLowerCase().includes(word) ||
-            photo.tags.some((tag) => tag.toLowerCase().includes(word)) ||
-            photo.description?.toLowerCase().includes(word)
-          )
-        )
-        
-        setSearchResults(results)
-        setIsSearching(false)
-      } catch (error) {
-        console.error('Error searching photos:', error)
-        setSearchResults([])
-        setIsSearching(false)
-      }
+    setTimeout(() => {
+      setIsSearching(false)
+      setCommittedSearchQuery(query) // Only set committed search query after loading finishes
     }, 800) // 0.8 second delay to simulate AI processing
   }
 
@@ -117,6 +95,8 @@ export default function HomePage() {
     setIsSearchMode(false)
     setIsSearching(false)
     setSearchQuery("")
+    setCommittedSearchQuery("")
+    setLoadingSearchQuery("")
     setSearchResults([])
     setInitialSearchQuery("")
     setRefineQuery("")
@@ -182,15 +162,12 @@ export default function HomePage() {
   const handleAddToSharedAlbum = (photoIds: number[]) => {
     if (createdSharedAlbum) {
       // Add photos to the shared album
-      const updatedAlbum = addPhotosToSharedAlbum(createdSharedAlbum.id, photoIds)
+      // In a real app, this would add photos to the shared album
+      console.log("Adding photos to shared album:", createdSharedAlbum.id, photoIds)
 
-      if (updatedAlbum) {
-        console.log("Successfully added photos to shared album:", updatedAlbum)
-
-        // Show success message (optional)
-        setShowAlbumSuccess(true)
-        setTimeout(() => setShowAlbumSuccess(false), 3000)
-      }
+      // Show success message (optional)
+      setShowAlbumSuccess(true)
+      setTimeout(() => setShowAlbumSuccess(false), 3000)
 
       // Clear the shared album context and return to home
       setCreatedSharedAlbum(null)
@@ -288,27 +265,23 @@ export default function HomePage() {
             {/* Home Content - Only visible when NOT in search mode */}
             {!isSearchMode && (
               <div className="transition-all duration-500 pt-4">
-                <RecentPhotos onViewAll={() => handleNavigate("library")} onPhotoClick={handlePhotoClick} refreshTrigger={refreshTrigger} />
+                <RecentPhotos onViewAll={() => handleNavigate("library")} onPhotoClick={handlePhotoClick} refreshTrigger={refreshTrigger} resetAnimation={animationResetTrigger} />
               </div>
             )}
 
-            {/* Search Results Batch - Only visible in search mode */}
+            {/* Search Results - Only visible when in search mode */}
             {isSearchMode && (
-                  <PhotoBatch
-                    photos={searchResults}
-                    searchQuery={initialSearchQuery || searchQuery}
-                    refineQuery={refineQuery}
-                    isLoading={isSearching}
-                    onClearSearch={handleClearSearch}
-                    onAlbumCreated={handleAlbumCreated}
-                    onPhotoClick={handlePhotoClick}
-                    onNavigateToAlbum={handleAlbumClick}
-                    sharedAlbumContext={createdSharedAlbum ? {
-                      albumId: createdSharedAlbum.id,
-                      albumTitle: createdSharedAlbum.name,
-                      onAddToSharedAlbum: handleAddToSharedAlbum
-                    } : undefined}
-                  />
+              <Library
+                isSearchMode={isSearchMode}
+                searchQuery={committedSearchQuery}
+                loadingSearchQuery={loadingSearchQuery}
+                isLoading={isSearching}
+                onPhotoClick={handlePhotoClick}
+                refreshTrigger={refreshTrigger}
+                onSelectionChange={handleSelectionChange}
+                clearSelectionTrigger={clearSelectionTrigger}
+                isSidebarCollapsed={isSidebarCollapsed}
+              />
             )}
           </div>
         )}
@@ -322,31 +295,17 @@ export default function HomePage() {
         {activeView === "explore" && <Explore onAlbumClick={handlePublicAlbumClick} onModalStateChange={setIsModalActive} />}
 
         {activeView === "library" && (
-          <>
-            {isSearchMode ? (
-              <PhotoBatch
-                photos={searchResults}
-                searchQuery={initialSearchQuery || searchQuery}
-                refineQuery={refineQuery}
-                isLoading={isSearching}
-                onClearSearch={handleClearSearch}
-                onAlbumCreated={handleAlbumCreated}
-                onPhotoClick={handlePhotoClick}
-                onNavigateToAlbum={handleAlbumClick}
-              />
-            ) : (
-              <Library
-                searchResults={undefined}
-                isSearchMode={false}
-                searchQuery=""
-                isLoading={false}
-                onPhotoClick={handlePhotoClick}
-                refreshTrigger={refreshTrigger}
-                onSelectionChange={handleSelectionChange}
-                clearSelectionTrigger={clearSelectionTrigger}
-              />
-            )}
-          </>
+          <Library
+            isSearchMode={isSearchMode}
+            searchQuery={committedSearchQuery}
+            loadingSearchQuery={loadingSearchQuery}
+            isLoading={isSearching}
+            onPhotoClick={handlePhotoClick}
+            refreshTrigger={refreshTrigger}
+            onSelectionChange={handleSelectionChange}
+            clearSelectionTrigger={clearSelectionTrigger}
+            isSidebarCollapsed={isSidebarCollapsed}
+          />
         )}
       </main>
 
@@ -503,134 +462,6 @@ export default function HomePage() {
         />
       )}
 
-      {/* Selection Footer */}
-      <div className={cn(
-        "fixed bottom-0 right-0 z-40 transition-all duration-500 ease-in-out",
-        isModalActive ? "left-0" : isSidebarCollapsed ? "left-16" : "left-64",
-        isSelectionMode 
-          ? "translate-y-0 opacity-100" 
-          : "translate-y-full opacity-0 pointer-events-none"
-      )}>
-        <div className={cn(
-          "glass-effect border-t border-border/50 shadow-layered-hover transition-all duration-500",
-          isSelectionMode ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
-        )}>
-          <div className="max-w-7xl mx-auto px-8 py-4">
-            <div className={cn(
-              "flex items-center justify-between gap-4 transition-all duration-700 delay-100",
-              isSelectionMode ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-            )}>
-              {/* Left side: Selection info and controls */}
-              <div className={cn(
-                "flex items-center gap-4 transition-all duration-700 delay-200",
-                isSelectionMode ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-              )}>
-                <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center transition-all duration-500",
-                    isSelectionMode ? "animate-in zoom-in-50 duration-500 delay-100" : ""
-                  )}>
-                    <Sparkles className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {selectedPhotos.length} photo{selectedPhotos.length !== 1 ? 's' : ''} selected
-                    </p>
-                  </div>
-                </div>
-                {selectedPhotos.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleClearSelection}
-                    className={cn(
-                      "text-muted-foreground hover:text-foreground transition-all duration-500",
-                      isSelectionMode ? "animate-in slide-in-from-left-4 fade-in duration-500 delay-300" : ""
-                    )}
-                  >
-                    Clear Selection
-                  </Button>
-                )}
-              </div>
-
-              {/* Right side: Action buttons */}
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  disabled={selectedPhotos.length === 0}
-                  className={cn(
-                    "border-2 border-primary/40 transition-all duration-300",
-                    isSelectionMode ? "animate-in slide-in-from-right-4 fade-in duration-500 delay-200" : "",
-                    selectedPhotos.length > 0
-                      ? "hover:border-primary hover:bg-primary/10"
-                      : "opacity-50 cursor-not-allowed",
-                  )}
-                  style={{
-                    transitionDelay: selectedPhotos.length > 0 ? '0ms' : undefined
-                  }}
-                >
-                  <Share2 className="h-5 w-5 mr-2" />
-                  Share
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  disabled={selectedPhotos.length === 0}
-                  className={cn(
-                    "border-2 border-primary/40 transition-all duration-300",
-                    isSelectionMode ? "animate-in slide-in-from-right-4 fade-in duration-500 delay-300" : "",
-                    selectedPhotos.length > 0
-                      ? "hover:border-primary hover:bg-primary/10"
-                      : "opacity-50 cursor-not-allowed",
-                  )}
-                  style={{
-                    transitionDelay: selectedPhotos.length > 0 ? '0ms' : undefined
-                  }}
-                >
-                  <Download className="h-5 w-5 mr-2" />
-                  Download
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  disabled={selectedPhotos.length === 0}
-                  className={cn(
-                    "border-2 border-primary/40 transition-all duration-300",
-                    isSelectionMode ? "animate-in slide-in-from-right-4 fade-in duration-500 delay-400" : "",
-                    selectedPhotos.length > 0
-                      ? "hover:border-primary hover:bg-primary/10"
-                      : "opacity-50 cursor-not-allowed",
-                  )}
-                  style={{
-                    transitionDelay: selectedPhotos.length > 0 ? '0ms' : undefined
-                  }}
-                >
-                  <FolderPlus className="h-5 w-5 mr-2" />
-                  Add to Album
-                </Button>
-                <Button
-                  size="lg"
-                  disabled={selectedPhotos.length === 0}
-                  className={cn(
-                    "bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg transition-all duration-300",
-                    isSelectionMode ? "animate-in slide-in-from-right-4 fade-in duration-500 delay-500" : "",
-                    selectedPhotos.length > 0
-                      ? "hover:shadow-glow hover:scale-105"
-                      : "opacity-50 cursor-not-allowed",
-                  )}
-                  style={{
-                    transitionDelay: selectedPhotos.length > 0 ? '0ms' : undefined
-                  }}
-                >
-                  <FolderPlus className="h-5 w-5 mr-2" />
-                  Create Album from {selectedPhotos.length} {selectedPhotos.length === 1 ? "Photo" : "Photos"}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

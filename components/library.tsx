@@ -1,6 +1,6 @@
 "use client"
 
-import { Filter, ChevronDown, CheckSquare, Square } from "lucide-react"
+import { Filter, ChevronDown, CheckSquare, Square, Share2, Download, FolderPlus, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -25,17 +25,18 @@ const sortOptions = [
 ]
 
 interface LibraryProps {
-  searchResults?: Photo[]
   isSearchMode?: boolean
   searchQuery?: string
+  loadingSearchQuery?: string
   isLoading?: boolean
   onPhotoClick?: (photo: Photo) => void
   refreshTrigger?: number
   onSelectionChange?: (selectedPhotos: Photo[], isSelectionMode: boolean) => void
   clearSelectionTrigger?: number
+  isSidebarCollapsed?: boolean
 }
 
-export function Library({ searchResults, isSearchMode = false, searchQuery = "", isLoading = false, onPhotoClick, refreshTrigger, onSelectionChange, clearSelectionTrigger }: LibraryProps = {}) {
+export function Library({ isSearchMode = false, searchQuery = "", loadingSearchQuery = "", isLoading = false, onPhotoClick, refreshTrigger, onSelectionChange, clearSelectionTrigger, isSidebarCollapsed = false }: LibraryProps = {}) {
   const [photoLibrary, setPhotoLibrary] = useState<Photo[]>([])
   const [likedPhotos, setLikedPhotos] = useState<Set<number>>(new Set())
   const [sortBy, setSortBy] = useState<SortOption>("date-desc")
@@ -110,8 +111,49 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
     })
   }, [])
 
-  // Calculate photos to display (must be before early return to maintain hook order)
-  const photosToDisplay = isSearchMode && searchResults ? searchResults : photoLibrary
+  const photosToDisplay = useMemo(() => {
+    // Filter based on search query (only passed after loading finishes)
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim()
+      
+      // Special handling for "my happiest moments" query
+      if (query === "my happiest moments") {
+        return photoLibrary.filter((photo) => photo.tags.includes("happiest"))
+      }
+      
+      const queryWords = query.split(/\s+/).filter(word => word.length > 0)
+      
+      // Extract tag filters (words after "with", but exclude "with" itself)
+      const withIndex = queryWords.indexOf("with")
+      const tagFilters = withIndex !== -1 ? queryWords.slice(withIndex + 1).filter(word => word !== "with") : []
+      
+      // Remove "with" and tag words from search words for regular filtering
+      const filteredQueryWords = queryWords.filter(word => word !== "with" && !tagFilters.includes(word))
+      
+      
+      const filtered = photoLibrary.filter((photo) => {
+        // First apply regular search filtering
+        const matchesSearch = filteredQueryWords.length === 0 || filteredQueryWords.some((word) =>
+          photo.name.toLowerCase().includes(word) ||
+          photo.location.toLowerCase().includes(word) ||
+          photo.tags.some((tag) => tag.toLowerCase().includes(word)) ||
+          photo.description?.toLowerCase().includes(word)
+        )
+        
+        // If tag filters are specified, photo must have ALL of them
+        if (tagFilters.length > 0) {
+          const hasAllTags = tagFilters.every(tag => photo.tags.includes(tag))
+          return matchesSearch && hasAllTags
+        }
+        
+        return matchesSearch
+      })
+      
+      return filtered
+    }
+    
+    return photoLibrary
+  }, [searchQuery, photoLibrary])
 
   const sortedPhotos = useMemo(() => {
     return [...photosToDisplay].sort((a, b) => {
@@ -176,12 +218,11 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
     setDisplayCount(20)
   }, [sortBy])
 
-  const displayedPhotos = useMemo(() =>
-    sortedPhotos.slice(0, displayCount),
-    [sortedPhotos, displayCount]
-  )
+  const displayedPhotos = useMemo(() => {
+    return sortedPhotos.slice(0, displayCount)
+  }, [sortedPhotos, displayCount])
 
-  // Loading state - show AI processing animation (after all hooks)
+  // Loading state - show AI processing animation
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -219,9 +260,9 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
               </svg>
             </div>
             <p className="text-sm text-muted-foreground">
-              Searching for &quot;{searchQuery}&quot;
+              Searching for &quot;{loadingSearchQuery}&quot;
             </p>
-
+            
             <style jsx>{`
               @keyframes fillProgress {
                 0% {
@@ -244,8 +285,8 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
         <div className="flex items-center justify-between mb-8">
           <div>
             <p className="text-lg text-muted-foreground">
-              {isSearchMode
-                ? `${searchResults?.length || 0} photos found for "${searchQuery}"`
+              {searchQuery && searchQuery.trim()
+                ? `${photosToDisplay.length} photos found for "${searchQuery}"`
                 : (
                   <>
                     <span className="font-bold text-foreground">{photoLibrary.length} photos</span> in your collection
@@ -325,6 +366,84 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
           </div>
         )}
       </div>
+
+      {/* Selection Footer */}
+      {isSelectionMode && selectedPhotos.size > 0 && (
+        <div className={cn(
+          "fixed bottom-0 right-0 z-50 translate-y-0 opacity-100 transition-all duration-500 ease-in-out",
+          isSidebarCollapsed ? "left-16" : "left-64"
+        )}>
+          <div className="glass-effect border-t border-border/50 shadow-layered-hover">
+            <div className="max-w-7xl mx-auto px-8 py-4">
+              <div className="flex items-center justify-between gap-4">
+                {/* Left side: Selection info and controls */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                      <Sparkles className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">
+                        {selectedPhotos.size} {selectedPhotos.size === 1 ? "Photo" : "Photos"} Selected
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Choose an action to continue
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedPhotos(new Set())
+                      setIsSelectionMode(false)
+                      onSelectionChange?.([], false)
+                    }}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    Clear Selection
+                  </Button>
+                </div>
+
+                {/* Right side: Action buttons */}
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-primary/40 text-primary hover:text-primary hover:bg-gradient-to-r hover:from-[#FF6B35]/20 hover:via-[#E0338E]/20 hover:to-[#9D4EDD]/20 hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105"
+                  >
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-primary/40 text-primary hover:text-primary hover:bg-gradient-to-r hover:from-[#FF6B35]/20 hover:via-[#E0338E]/20 hover:to-[#9D4EDD]/20 hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-primary/40 text-primary hover:text-primary hover:bg-gradient-to-r hover:from-[#FF6B35]/20 hover:via-[#E0338E]/20 hover:to-[#9D4EDD]/20 hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105"
+                  >
+                    <FolderPlus className="h-4 w-4 mr-2" />
+                    Add to Album
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-gradient-to-r from-[#FF6B35] to-[#E0338E] text-white border-primary transition-all duration-300 hover:shadow-glow hover:scale-105"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Create Album
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
