@@ -207,8 +207,8 @@ export function RecentPhotos({ onViewAll, onPhotoClick, refreshTrigger }: Recent
 
   // No loading state needed - photos appear instantly!
   return (
-    <section className="max-w-7xl mx-auto px-8 pt-2 pb-0" data-section="memories">
-      <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2 md:gap-3 auto-rows-[100px] md:auto-rows-[150px] lg:auto-rows-[200px]">
+    <section className="max-w-7xl mx-auto px-8 py-2" data-section="memories">
+      <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-1.5 md:gap-2.5 auto-rows-[95px] md:auto-rows-[140px] lg:auto-rows-[170px]">
         {displayedPhotos.map((photo, index) => {
           const isAnimated = animatedPhotos.has(photo.id)
           const isFading = fadingPhotos.has(photo.id)

@@ -274,26 +274,6 @@ export default function HomePage() {
             {!isSearchMode && (
               <div className="transition-all duration-500 pt-4">
                 <RecentPhotos onViewAll={() => handleNavigate("library")} onPhotoClick={handlePhotoClick} refreshTrigger={refreshTrigger} />
-                <div className="max-w-7xl mx-auto px-8 py-12">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Albums</h2>
-                    <Button
-                      onClick={() => setIsCreateSharedAlbumOpen(true)}
-                      variant="outline"
-                      className="border-2 border-primary/40 text-primary hover:text-primary hover:bg-gradient-to-r hover:from-[#FF6B35]/20 hover:via-[#E0338E]/20 hover:to-[#9D4EDD]/20 hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105 font-semibold"
-                    >
-                      <Share2 className="h-4 w-4 mr-2" />
-                      Create Shared Album
-                    </Button>
-                  </div>
-                  <AlbumsList key={albumsUpdated} onAlbumClick={handleAlbumClick} isPinterestStyle={true} />
-                </div>
-
-                {/* Explore Preview Section */}
-                <ExplorePreview
-                  onViewAll={() => handleNavigate("explore")}
-                  onAlbumClick={handlePublicAlbumClick}
-                />
               </div>
             )}
 
