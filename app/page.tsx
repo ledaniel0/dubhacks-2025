@@ -2,7 +2,6 @@
 
 import { Sidebar } from "@/components/sidebar"
 import { TopHeader } from "@/components/top-header"
-import { SearchHero } from "@/components/search-hero"
 import { PhotoBatch } from "@/components/photo-batch"
 import { AlbumsList } from "@/components/albums-list"
 import { SharedAlbums } from "@/components/shared-albums"
@@ -11,7 +10,6 @@ import { UploadModal } from "@/components/upload-modal"
 import { RecentPhotos } from "@/components/recent-photos"
 import { photoLibrary } from "@/lib/photo-data"
 import { useState } from "react"
-import { cn } from "@/lib/utils"
 import type { Photo } from "@/lib/types"
 
 export default function HomePage() {
@@ -72,22 +70,16 @@ export default function HomePage() {
       <main className="flex-1 ml-64 pt-20">
         {activeView === "home" && (
           <div className="relative">
-            {/* Search Hero - Always visible on home */}
-            <SearchHero onSearch={handleSearch} isSearchActive={isSearchMode} currentQuery={searchQuery} />
-
             {/* Home Content - Only visible when NOT in search mode */}
-            <div
-              className={cn(
-                "transition-all duration-500",
-                isSearchMode ? "opacity-0 h-0 overflow-hidden" : "opacity-100",
-              )}
-            >
-              <RecentPhotos />
-              <div className="max-w-7xl mx-auto px-8 py-12">
-                <h2 className="text-2xl font-semibold text-foreground mb-6">Albums</h2>
-                <AlbumsList onAlbumClick={(id) => console.log("Album clicked:", id)} isPinterestStyle={true} />
+            {!isSearchMode && (
+              <div className="transition-all duration-500">
+                <RecentPhotos />
+                <div className="max-w-7xl mx-auto px-8 py-12">
+                  <h2 className="text-2xl font-semibold text-foreground mb-6">Albums</h2>
+                  <AlbumsList onAlbumClick={(id) => console.log("Album clicked:", id)} isPinterestStyle={true} />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Search Results Batch - Only visible in search mode */}
             {isSearchMode && (
