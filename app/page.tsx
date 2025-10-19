@@ -125,6 +125,7 @@ export default function HomePage() {
           onUploadClick={() => setIsUploadModalOpen(true)}
           onSearch={handleSearch}
           showSearch={activeView === "home" || activeView === "search-results" || activeView === "library"}
+          searchQuery={searchQuery}
         />
       )}
 
