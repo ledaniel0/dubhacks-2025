@@ -50,7 +50,7 @@ export default function HomePage() {
       
       setSearchResults(results)
       setIsSearching(false)
-    }, 1500) // 1.5 second delay to simulate AI processing
+    }, 800) // 0.8 second delay to simulate AI processing
   }
 
   const handleClearSearch = () => {

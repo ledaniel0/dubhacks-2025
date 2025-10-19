@@ -80,7 +80,7 @@ export function Library({ searchResults, isSearchMode = false, searchQuery = "",
                   style={{
                     strokeDasharray: "126",
                     strokeDashoffset: "126",
-                    animation: "fillProgress 1.5s ease-out forwards",
+                    animation: "fillProgress 0.8s ease-out forwards",
                   }}
                 />
               </svg>
