@@ -55,3 +55,18 @@ export interface SharedAlbum {
   isOwner: boolean
   coverPhotoId?: number
 }
+
+export interface PublicAlbum {
+  id: number
+  title: string
+  location: string // Landmark name (e.g., "Eiffel Tower, Paris")
+  description: string
+  photoIds: number[]
+  contributorCount: number
+  photoCount: number
+  coverPhotoId?: number
+  isPublic: true
+  tags: string[]
+  createdAt: string
+  lastContributed: string
+}

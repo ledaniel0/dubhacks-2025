@@ -9,14 +9,17 @@ import { Library } from "@/components/library"
 import { UploadModal } from "@/components/upload-modal"
 import { RecentPhotos } from "@/components/recent-photos"
 import { PhotoDetail } from "@/components/photo-detail"
+import { AlbumDetail } from "@/components/album-detail"
+import { Explore } from "@/components/explore"
+import { ExplorePreview } from "@/components/explore-preview"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Share2, Sparkles } from "lucide-react"
-import { photoLibrary, addSharedAlbum, addAlbum } from "@/lib/photo-data"
+import { photoLibrary, addSharedAlbum, addAlbum, albums } from "@/lib/photo-data"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
-import type { Photo } from "@/lib/types"
+import type { Photo, Album, PublicAlbum } from "@/lib/types"
 
 export default function HomePage() {
   const [activeView, setActiveView] = useState("home")
@@ -35,6 +38,10 @@ export default function HomePage() {
   const [albumsUpdated, setAlbumsUpdated] = useState(0) // Trigger re-render when albums change
   const [showAlbumSuccess, setShowAlbumSuccess] = useState(false)
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
+  const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null)
+  const [selectedPublicAlbum, setSelectedPublicAlbum] = useState<PublicAlbum | null>(null)
+  const [likedPhotos, setLikedPhotos] = useState<Set<number>>(new Set())
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   const handleSearchQueryChange = (query: string) => {
     setSearchQuery(query)
@@ -58,19 +65,29 @@ export default function HomePage() {
     setRefineQuery("")
     
     // Simulate AI search processing with delay (like ChatGPT)
-    setTimeout(() => {
-      // In production, this would call your AI API
-      // For now, filter photos based on query
-      const results = photoLibrary.filter(
-        (photo) =>
-          photo.name.toLowerCase().includes(query.toLowerCase()) ||
-          photo.location.toLowerCase().includes(query.toLowerCase()) ||
-          photo.tags.some((tag) => tag.toLowerCase().includes(query.toLowerCase())) ||
-          photo.description?.toLowerCase().includes(query.toLowerCase()),
-      )
-      
-      setSearchResults(results)
-      setIsSearching(false)
+    setTimeout(async () => {
+      try {
+        // Fetch photos from API
+        const response = await fetch('/api/photos')
+        const data = await response.json()
+        const photos: Photo[] = data.photos || []
+        
+        // Filter photos based on query
+        const results = photos.filter(
+          (photo) =>
+            photo.name.toLowerCase().includes(query.toLowerCase()) ||
+            photo.location.toLowerCase().includes(query.toLowerCase()) ||
+            photo.tags.some((tag) => tag.toLowerCase().includes(query.toLowerCase())) ||
+            photo.description?.toLowerCase().includes(query.toLowerCase()),
+        )
+        
+        setSearchResults(results)
+        setIsSearching(false)
+      } catch (error) {
+        console.error('Error searching photos:', error)
+        setSearchResults([])
+        setIsSearching(false)
+      }
     }, 800) // 0.8 second delay to simulate AI processing
   }
 
@@ -162,6 +179,35 @@ export default function HomePage() {
     setSelectedPhoto(null)
   }
 
+  const handleAlbumClick = (albumId: number) => {
+    const album = albums.find(a => a.id === albumId)
+    if (album) {
+      setSelectedAlbum(album)
+    }
+  }
+
+  const handleCloseAlbumDetail = () => {
+    setSelectedAlbum(null)
+  }
+
+  const handlePublicAlbumClick = (album: PublicAlbum) => {
+    setSelectedPublicAlbum(album)
+    // For now, just log it - could navigate to a detail view later
+    console.log("Public album clicked:", album)
+  }
+
+  const toggleLike = (id: number) => {
+    setLikedPhotos((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
+  }
+
   return (
     <div className="flex min-h-screen bg-background relative overflow-hidden">
       {/* Vibrant animated background mesh gradients */}
@@ -189,7 +235,7 @@ export default function HomePage() {
             {/* Home Content - Only visible when NOT in search mode */}
             {!isSearchMode && (
               <div className="transition-all duration-500">
-                <RecentPhotos onViewAll={() => handleNavigate("library")} onPhotoClick={handlePhotoClick} />
+                <RecentPhotos onViewAll={() => handleNavigate("library")} onPhotoClick={handlePhotoClick} refreshTrigger={refreshTrigger} />
                 <div className="max-w-7xl mx-auto px-8 py-12">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Albums</h2>
@@ -202,8 +248,14 @@ export default function HomePage() {
                       Create Shared Album
                     </Button>
                   </div>
-                  <AlbumsList key={albumsUpdated} onAlbumClick={(id) => console.log("Album clicked:", id)} isPinterestStyle={true} />
+                  <AlbumsList key={albumsUpdated} onAlbumClick={handleAlbumClick} isPinterestStyle={true} />
                 </div>
+
+                {/* Explore Preview Section */}
+                <ExplorePreview
+                  onViewAll={() => handleNavigate("explore")}
+                  onAlbumClick={handlePublicAlbumClick}
+                />
               </div>
             )}
 
@@ -227,22 +279,29 @@ export default function HomePage() {
           </div>
         )}
 
-        {activeView === "albums" && <AlbumsList key={albumsUpdated} onAlbumClick={(id) => console.log("Album clicked:", id)} />}
+        {activeView === "albums" && <AlbumsList key={albumsUpdated} onAlbumClick={handleAlbumClick} />}
 
         {activeView === "shared" && <SharedAlbums onAlbumClick={(id) => console.log("Shared album clicked:", id)} onCreateSharedAlbum={() => setIsCreateSharedAlbumOpen(true)} />}
 
+        {activeView === "explore" && <Explore onAlbumClick={handlePublicAlbumClick} />}
+
         {activeView === "library" && (
-          <Library 
+          <Library
             searchResults={isSearchMode ? searchResults : undefined}
             isSearchMode={isSearchMode}
             searchQuery={searchQuery}
             isLoading={isSearching}
             onPhotoClick={handlePhotoClick}
+            refreshTrigger={refreshTrigger}
           />
         )}
       </main>
 
-      <UploadModal isOpen={isUploadModalOpen} onClose={() => setIsUploadModalOpen(false)} />
+      <UploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onPhotoUploaded={() => setRefreshTrigger(prev => prev + 1)}
+      />
 
       {/* Create Shared Album Dialog */}
       <Dialog open={isCreateSharedAlbumOpen} onOpenChange={handleCloseSharedAlbumDialog}>
@@ -365,7 +424,26 @@ export default function HomePage() {
 
       {/* Photo Detail Modal */}
       {selectedPhoto && (
-        <PhotoDetail photo={selectedPhoto} onClose={handleClosePhotoDetail} />
+        <PhotoDetail
+          photo={selectedPhoto}
+          onClose={handleClosePhotoDetail}
+          isLiked={likedPhotos.has(selectedPhoto.id)}
+          onToggleLike={toggleLike}
+        />
+      )}
+
+      {/* Album Detail Modal */}
+      {selectedAlbum && (
+        <AlbumDetail
+          album={selectedAlbum}
+          onClose={handleCloseAlbumDetail}
+          onPhotoClick={(photoId) => {
+            const photo = photoLibrary.find(p => p.id === photoId)
+            if (photo) {
+              setSelectedPhoto(photo)
+            }
+          }}
+        />
       )}
     </div>
   )

@@ -10,10 +10,13 @@ import { useEffect, useState } from "react"
 interface PhotoDetailProps {
   photo: Photo
   onClose: () => void
+  isLiked?: boolean
+  onToggleLike?: (id: number) => void
 }
 
-export function PhotoDetail({ photo, onClose }: PhotoDetailProps) {
+export function PhotoDetail({ photo, onClose, isLiked = false, onToggleLike }: PhotoDetailProps) {
   const [dimensions, setDimensions] = useState({ width: photo.width, height: photo.height })
+  const [liked, setLiked] = useState(isLiked)
 
   useEffect(() => {
     // Disable scroll on mount
@@ -39,6 +42,28 @@ export function PhotoDetail({ photo, onClose }: PhotoDetailProps) {
     }
   }
 
+  const handleLikeToggle = () => {
+    setLiked(!liked)
+    onToggleLike?.(photo.id)
+  }
+
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(photo.url)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${photo.name}.jpg`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error downloading image:', error)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm" onClick={handleBackdropClick}>
       {/* Header */}
@@ -54,10 +79,10 @@ export function PhotoDetail({ photo, onClose }: PhotoDetailProps) {
           </Button>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="hover:bg-primary/10">
-              <Heart className={cn("h-4 w-4", photo.liked ? "text-red-500 fill-red-500" : "text-muted-foreground")} />
+            <Button variant="ghost" size="icon" className="hover:bg-primary/10" onClick={handleLikeToggle}>
+              <Heart className={cn("h-4 w-4", liked ? "text-red-500 fill-red-500" : "text-muted-foreground")} />
             </Button>
-            <Button variant="ghost" size="icon" className="hover:bg-primary/10">
+            <Button variant="ghost" size="icon" className="hover:bg-primary/10" onClick={handleDownload}>
               <Download className="h-4 w-4 text-muted-foreground" />
             </Button>
             <Button variant="ghost" size="icon" className="hover:bg-primary/10">
@@ -143,40 +168,6 @@ export function PhotoDetail({ photo, onClose }: PhotoDetailProps) {
                 </div>
               )}
 
-              {/* AI Analysis */}
-              {(photo.aiDescription || photo.aiTags || photo.mood) && (
-                <div className="space-y-3">
-                  <span className="text-foreground font-medium">AI Analysis</span>
-                  <div className="space-y-3">
-                    {photo.aiDescription && (
-                      <div className="space-y-1">
-                        <span className="text-muted-foreground text-sm">Description</span>
-                        <p className="text-foreground">{photo.aiDescription}</p>
-                      </div>
-                    )}
-                    {photo.mood && (
-                      <div className="space-y-1">
-                        <span className="text-muted-foreground text-sm">Mood</span>
-                        <Badge variant="outline" className="text-primary border-primary">
-                          {photo.mood}
-                        </Badge>
-                      </div>
-                    )}
-                    {photo.aiTags && photo.aiTags.length > 0 && (
-                      <div className="space-y-1">
-                        <span className="text-muted-foreground text-sm">AI Tags</span>
-                        <div className="flex flex-wrap gap-1">
-                          {photo.aiTags.map((tag, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
 
               {/* Tags */}
               {photo.tags && photo.tags.length > 0 && (
@@ -212,11 +203,11 @@ export function PhotoDetail({ photo, onClose }: PhotoDetailProps) {
 
               {/* Photo Actions - at bottom */}
               <div className="flex items-center justify-center gap-4 pt-6 border-t border-border/50">
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Heart className={cn("h-4 w-4", photo.liked ? "text-red-500 fill-red-500" : "")} />
-                  {photo.liked ? "Liked" : "Like"}
+                <Button variant="outline" className="flex items-center gap-2" onClick={handleLikeToggle}>
+                  <Heart className={cn("h-4 w-4", liked ? "text-red-500 fill-red-500" : "")} />
+                  {liked ? "Liked" : "Like"}
                 </Button>
-                <Button variant="outline" className="flex items-center gap-2">
+                <Button variant="outline" className="flex items-center gap-2" onClick={handleDownload}>
                   <Download className="h-4 w-4" />
                   Download
                 </Button>
