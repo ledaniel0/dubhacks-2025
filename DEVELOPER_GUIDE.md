@@ -15,16 +15,16 @@ All photos in Echo are managed through a single source of truth: `lib/photo-data
    \`\`\`typescript
    // In lib/photo-data.ts
    export const photoLibrary: Photo[] = [
-     // ... existing photos ...
-     createPhoto({
-       id: 22, // Use next available ID
-       name: "My Awesome Photo",
-       url: "/my-awesome-photo.jpg",
-       date: "January 15, 2025",
-       tags: ["nature", "landscape"],
-       description: "A beautiful sunset view",
-       location: "Yosemite National Park"
-     })
+   // ... existing photos (currently 1-13) ...
+   createPhoto({
+   id: 14, // Use next available ID (current max is 13)
+   name: "My Awesome Photo",
+   url: "/my-awesome-photo.jpg",
+   date: "January 15, 2025",
+   tags: ["nature", "landscape"],
+   description: "A beautiful sunset view",
+   location: "Yosemite National Park"
+   })
    ]
    \`\`\`
 
@@ -39,12 +39,12 @@ To add a photo to an album, just add its ID to the album's `photoIds` array:
 
 \`\`\`typescript
 export const albums: Album[] = [
-  {
-    id: 1,
-    title: "Summer 2024",
-    photoIds: [9, 10, 11, 5, 22], // Add your photo ID here
-    // ... rest of album config
-  }
+{
+id: 1,
+title: "DubHacks 2025",
+photoIds: [1, 2, 3, 4, 7, 10, 14], // Add your photo ID here
+// ... rest of album config
+}
 ]
 \`\`\`
 
@@ -54,60 +54,88 @@ Use the `createAlbum()` helper:
 
 \`\`\`typescript
 export const albums: Album[] = [
-  // ... existing albums ...
-  createAlbum({
-    id: 4,
-    title: "Winter Wonderland",
-    photoIds: [22, 23, 24],
-    description: "Snowy adventures",
-    coverPhotoId: 22 // Optional: specify cover photo
-  })
+// ... existing albums (currently 3 albums) ...
+createAlbum({
+id: 4,
+title: "Winter Wonderland",
+photoIds: [14, 15, 16], // Use actual photo IDs from your library
+description: "Snowy adventures",
+coverPhotoId: 14 // Optional: specify cover photo
+})
 ]
 \`\`\`
 
 ## Data Structure
 
 ### Photo Object
+
 \`\`\`typescript
 {
-  id: number              // Unique identifier
-  name: string            // Display name
-  url: string             // Path to image (e.g., "/photo.jpg")
-  date: string            // Date taken
-  tags: string[]          // Searchable tags
-  description?: string    // Optional description
-  location?: string       // Optional location
-  liked?: boolean         // Favorite status
-  // ... camera metadata (optional)
+id: number // Unique identifier
+name: string // Display name
+url: string // Path to image (e.g., "/photo.jpg")
+date: string // Date taken
+tags: string[] // Searchable tags
+description?: string // Optional description
+location?: string // Optional location
+liked?: boolean // Favorite status
+// ... camera metadata (optional)
 }
 \`\`\`
 
 ### Album Object
+
 \`\`\`typescript
 {
-  id: number              // Unique identifier
-  title: string           // Album name
-  photoIds: number[]      // Array of photo IDs from library
-  description?: string    // Optional description
-  coverPhotoId?: number   // ID of cover photo (defaults to first)
+id: number // Unique identifier
+title: string // Album name
+photoIds: number[] // Array of photo IDs from library
+description?: string // Optional description
+coverPhotoId?: number // ID of cover photo (defaults to first)
 }
 \`\`\`
 
 ## Architecture
 
 \`\`\`
-lib/photo-data.ts          → Single source of truth for all data
-  ├── photoLibrary[]       → All photos
-  ├── albums[]             → Personal albums (reference photoLibrary)
-  └── sharedAlbums[]       → Shared albums (reference photoLibrary)
+lib/photo-data.ts → Single source of truth for all data
+├── photoLibrary[] → All photos (currently 13 photos)
+├── albums[] → Personal albums (currently 3 albums)
+└── sharedAlbums[] → Shared albums (currently 3 albums)
 
 components/
-  ├── photo-card.tsx       → Displays individual photos
-  ├── album-card.tsx       → Displays album cards
-  ├── library.tsx          → Shows all photos
-  ├── albums-list.tsx      → Shows all albums
-  └── shared-albums.tsx    → Shows shared albums
+├── photo-card.tsx → Displays individual photos
+├── album-card.tsx → Displays album cards
+├── photo-batch.tsx → Search results with selection (NEW)
+├── library.tsx → Shows all photos
+├── albums-list.tsx → Shows all albums
+└── shared-albums.tsx → Shows shared albums
+
+app/
+└── page.tsx → Main orchestration (search mode, state)
 \`\`\`
+
+## Search Feature
+
+The search functionality is implemented with a native, single-page experience:
+
+1. **Search Bar** (`components/search-hero.tsx`)
+
+   - Stays in place during search
+   - Compresses slightly when search is active
+   - Searches through photo names, locations, tags, and descriptions
+
+2. **Photo Batch** (`components/photo-batch.tsx`)
+
+   - Self-contained component that displays search results
+   - Includes photo grid, selection, actions bar, and album creation
+   - Multi-select support (click, Shift+click, Cmd/Ctrl+click)
+   - Integrated "Create Album" functionality
+
+3. **State Management** (`app/page.tsx`)
+   - `isSearchMode` - toggles between home and search view
+   - `searchResults` - filtered photos from AI search
+   - Smooth transitions between views
 
 ## Helper Functions
 
@@ -132,50 +160,53 @@ components/
 \`\`\`typescript
 // Add multiple photos at once
 const newPhotos = [
-  createPhoto({
-    id: 22,
-    name: "Mountain Peak",
-    url: "/mountain-peak.jpg",
-    date: "January 15, 2025",
-    tags: ["mountain", "nature"]
-  }),
-  createPhoto({
-    id: 23,
-    name: "Forest Path",
-    url: "/forest-path.jpg",
-    date: "January 16, 2025",
-    tags: ["forest", "hiking"]
-  }),
+createPhoto({
+id: 14, // Next available ID (current max is 13)
+name: "Mountain Peak",
+url: "/mountain-peak.jpg",
+date: "January 15, 2025",
+tags: ["mountain", "nature"]
+}),
+createPhoto({
+id: 15,
+name: "Forest Path",
+url: "/forest-path.jpg",
+date: "January 16, 2025",
+tags: ["forest", "hiking"]
+}),
 ]
 
 export const photoLibrary: Photo[] = [
-  // ... existing photos ...
-  ...newPhotos
+// ... existing photos (currently 1-13) ...
+...newPhotos
 ]
 
 // Create an album with these photos
 export const albums: Album[] = [
-  // ... existing albums ...
-  createAlbum({
-    id: 4,
-    title: "Nature Collection",
-    photoIds: [22, 23]
-  })
+// ... existing albums (currently 3 albums) ...
+createAlbum({
+id: 4,
+title: "Nature Collection",
+photoIds: [14, 15]
+})
 ]
 \`\`\`
 
 ## Troubleshooting
 
 **Photo not showing up?**
+
 - Check the file path is correct (starts with `/`)
 - Verify the image is in the `/public` folder
 - Make sure the ID is unique
 
 **Album showing broken images?**
+
 - Run `validatePhotoReferences()` to find missing IDs
 - Check that all photo IDs in the album exist in photoLibrary
 
 **Need to update a photo?**
+
 - Find it in photoLibrary by ID
 - Update the properties you need
 - Changes will reflect everywhere the photo is used

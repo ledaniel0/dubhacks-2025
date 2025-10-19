@@ -83,7 +83,7 @@ export function SearchResults({ query, onClearSearch, onSearchChange }: SearchRe
       <div className="max-w-7xl mx-auto px-8 py-8">
         <div className="mb-6">
           <h2 className="text-2xl font-semibold text-foreground">Found {mockPhotos.length} photos</h2>
-          <p className="text-sm text-muted-foreground mt-1">Results for "{query}"</p>
+          <p className="text-sm text-muted-foreground mt-1">Results for &quot;{query}&quot;</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,18 +1,20 @@
 "use client"
 
+import React, { useState, useEffect } from "react"
 import { Search, Sparkles } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface SearchHeroProps {
   onSearch: (query: string) => void
+  isSearchActive?: boolean
+  currentQuery?: string
 }
 
-export function SearchHero({ onSearch }: SearchHeroProps) {
+export function SearchHero({ onSearch, isSearchActive = false, currentQuery = "" }: SearchHeroProps) {
   const [isFocused, setIsFocused] = useState(false)
-  const [searchValue, setSearchValue] = useState("")
+  const [searchValue, setSearchValue] = useState(currentQuery)
 
   const handleSearch = () => {
     if (searchValue.trim()) {
@@ -20,9 +22,24 @@ export function SearchHero({ onSearch }: SearchHeroProps) {
     }
   }
 
+  // Update search value when currentQuery changes
+  useEffect(() => {
+    setSearchValue(currentQuery)
+  }, [currentQuery])
+
   return (
-    <section className="relative flex items-center justify-center min-h-[40vh] px-4">
-      <div className="absolute inset-0 flex items-center justify-center opacity-30">
+    <section
+      className={cn(
+        "relative flex items-center justify-center px-4 transition-all duration-700",
+        isSearchActive ? "min-h-[25vh]" : "min-h-[40vh]",
+      )}
+    >
+      <div
+        className={cn(
+          "absolute inset-0 flex items-center justify-center transition-opacity duration-700",
+          isSearchActive ? "opacity-10" : "opacity-30",
+        )}
+      >
         <div className="w-96 h-96 bg-gradient-to-r from-primary/30 to-accent/30 rounded-full blur-3xl" />
       </div>
 
@@ -64,7 +81,12 @@ export function SearchHero({ onSearch }: SearchHeroProps) {
             </div>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+          <div
+            className={cn(
+              "mt-8 flex flex-wrap items-center justify-center gap-2 transition-all duration-500",
+              isSearchActive ? "opacity-0 h-0 overflow-hidden" : "opacity-100",
+            )}
+          >
             <span className="text-sm text-muted-foreground font-semibold">Popular:</span>
             {["Happiest moments", "Road trips", "Artistic shots", "Celebrations"].map((query) => (
               <button
