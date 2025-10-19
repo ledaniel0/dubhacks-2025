@@ -4,10 +4,17 @@ import { clearUploadedPhotos } from "@/lib/photo-storage"
 
 export const dynamic = "force-dynamic"
 
+// Track if we've cleared photos in this server instance
+let hasClearedPhotos = false
+
 export async function GET() {
   try {
-    // Clear uploaded photos on every GET request to start fresh
-    clearUploadedPhotos()
+    // Only clear uploaded photos on the first request after server restart
+    if (!hasClearedPhotos) {
+      clearUploadedPhotos()
+      hasClearedPhotos = true
+      console.log("Cleared uploaded photos on server start")
+    }
     
     // Use session-based photo library that includes both static and uploaded photos
     const sessionPhotos = getSessionPhotoLibrary()

@@ -317,7 +317,7 @@ export const basePhotoLibrary: Photo[] = [
   createPhoto({
     id: 21,
     name: "Japanese Cuisine",
-    url: "/images/japan/food/IMG_4395.jpg",
+    url: "/images/japan/IMG_4395.jpg",
     description: "Exquisite Japanese dining experience",
     date: "August 2023",
     location: "Japan",
@@ -992,6 +992,16 @@ export const basePhotoLibrary: Photo[] = [
     location: "San Francisco, CA",
     tags: ["san francisco", "streets", "urban", "charming", "city"],
     liked: true,
+  }),
+  createPhoto({
+    id: 43,
+    name: "Long Grasshopper",
+    url: "/images/japan/longgrasshopper.jpg",
+    description: "Interesting long grasshopper in Japan",
+    date: "August 2023",
+    location: "Japan",
+    tags: ["nature", "japan", "wildlife", "insect", "long"],
+    liked: false,
   }),
 ]
 
